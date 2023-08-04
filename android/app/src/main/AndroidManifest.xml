@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:label="VQAsk"
+        android:label="multimodal_interaction_prj"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
