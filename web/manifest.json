@@ -1,6 +1,6 @@
 {
-    "name": "provarepl",
-    "short_name": "provarepl",
+    "name": "multimodal_interaction_prj",
+    "short_name": "multimodal_interaction_prj",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

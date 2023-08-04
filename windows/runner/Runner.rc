@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "VQAmobile" "\0"
+            VALUE "FileDescription", "multimodal_interaction_prj" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "VQAmobile" "\0"
+            VALUE "InternalName", "multimodal_interaction_prj" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "provarepl.exe" "\0"
-            VALUE "ProductName", "VQAmobile" "\0"
+            VALUE "OriginalFilename", "multimodal_interaction_prj.exe" "\0"
+            VALUE "ProductName", "multimodal_interaction_prj" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

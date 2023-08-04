@@ -1,40 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:replicate/replicate.dart';
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
   Replicate.apiKey = dotenv.env['API_KEY']!;
-
-  ByteData img = await rootBundle.load('assets/images/cat1.jpg');
-  var buffer = img.buffer;
-  var img64 = base64.encode(Uint8List.view(buffer));
-
-  try {
-    Prediction prediction = await Replicate.instance.predictions.create(
-      version:
-          "b96a2f33cc8e4b0aa23eacfce731b9c41a7d9466d9ed4e167375587b54db9423",
-      input: {
-        "prompt": "What is shown in the image?",
-        "image":
-            "data:image/jpeg;base64,$img64" //or insert a link to an image on the Internet
-      },
-    );
-  } catch (e) {
-    //nothing
-  }
-  await Future.delayed(Duration(seconds: 7));
-  PaginatedPredictions predictionsPageList =
-      await Replicate.instance.predictions.list();
-
-  Prediction prediction = await Replicate.instance.predictions.get(
-    id: predictionsPageList.results.elementAt(0).id,
-  );
-  print(prediction.output);
-
   runApp(const MyApp());
 }
 
@@ -47,21 +23,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -72,16 +33,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -89,71 +40,149 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  File? _image;
+  Future getImage(ImageSource source) async {
+    try {
+      final image = await ImagePicker().pickImage(source: source);
+      if (image == null) return;
+      //final imageTemporary = File(image.path);
+      final imagePermanent = await saveFilePermanently(image.path);
 
-  void _incrementCounter() {
+      setState(() {
+        this._image = imagePermanent; //imageTemporary;
+      });
+    } on PlatformException catch (e) {
+      print("Failed to pick image: $e");
+    }
+  }
+
+  Future<File> saveFilePermanently(String imagePath) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final name = basename(imagePath);
+    final image = File('${directory.path}/$name');
+    return File(imagePath).copy(image.path);
+  }
+
+  Future<String> getAnswer(String question) async {
+    //ByteData bytes = await rootBundle.load('assets/images/cat.jpg');
+    //var buffer = bytes.buffer;
+    //var encodedImg = base64.encode(Uint8List.view(buffer));
+    List<int> fileInByte = _image!.readAsBytesSync();
+    String fileInBase64 = base64Encode(fileInByte);
+    try {
+      // ignore: unused_local_variable
+      Prediction prediction = await Replicate.instance.predictions.create(
+        version:
+            "b96a2f33cc8e4b0aa23eacfce731b9c41a7d9466d9ed4e167375587b54db9423",
+        input: {
+          "prompt": question,
+          "image": "data:image/jpg;base64,$fileInBase64"
+        },
+      );
+    } catch (e) {
+      //nothing
+    }
+    await Future.delayed(const Duration(seconds: 7));
+    PaginatedPredictions predictionsPageList =
+        await Replicate.instance.predictions.list();
+
+    Prediction prediction = await Replicate.instance.predictions.get(
+      id: predictionsPageList.results.elementAt(0).id,
+    );
+    return prediction.output;
+  }
+
+  // use this controller to get what the user typed
+  TextEditingController _textController = TextEditingController();
+  String displayedAnswer = "Answer: ";
+
+  void displayAnswer(answer) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      displayedAnswer = "Answer: " + answer;
     });
+  }
+
+  Widget customButton({
+    required String title,
+    required IconData icon,
+    required VoidCallback onClick,
+  }) {
+    return Container(
+        width: 300,
+        child: ElevatedButton(
+            onPressed: onClick,
+            child: Row(
+              children: [
+                Icon(icon),
+                SizedBox(width: 80),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            )));
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(height: 20),
+                _image != null
+                    ? Image.file(_image!,
+                        width: 250, height: 250, fit: BoxFit.cover)
+                    : Image.asset("assets/images/logo.jpg"),
+                SizedBox(height: 20),
+                customButton(
+                    title: 'Pick from Gallery',
+                    icon: Icons.image_outlined,
+                    onClick: () => getImage(ImageSource.gallery)),
+                customButton(
+                    title: 'Pick from Camera',
+                    icon: Icons.camera,
+                    onClick: () => getImage(ImageSource.camera)),
+                Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                TextField(
+                  controller: _textController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    hintText: 'Enter a question...',
+                    suffixIcon: IconButton(
+                      onPressed: () => _textController.clear(),
+                      icon: const Icon(Icons.clear),
+                    ),
+                  ),
+                ),
+                MaterialButton(
+                  onPressed: () async {
+                    String answer = await getAnswer(_textController.text);
+                    displayAnswer(answer);
+                  },
+                  color: Colors.blue,
+                  child:
+                      const Text('Ask', style: TextStyle(color: Colors.white)),
+                ),
+                Expanded(
+                  child: Container(
+                      padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                      child: Text('$displayedAnswer',
+                          style: TextStyle(fontSize: 15))),
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 }

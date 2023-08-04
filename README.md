@@ -1,4 +1,4 @@
-# VQAmobile
+# multimodal_interaction_prj
 
 A new Flutter project.
 
