@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -21,15 +22,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'VQAsk',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xD9E5DE), background: Colors.white),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'VQAsk Application'),
     );
   }
 }
+
+enum TtsState { playing, stopped, paused, continued }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -41,6 +45,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
+
+  /*for the text-to-speech*/
+  FlutterTts fluttertts = FlutterTts();
+
+  void textToSpeech(String text) async {
+    await fluttertts.setLanguage("en-US");
+    await fluttertts.setVolume(10);
+    await fluttertts.setSpeechRate(0.5);
+    await fluttertts.setPitch(1);
+    await fluttertts.speak(text);
+  }
+
   Future getImage(ImageSource source) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
@@ -108,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
     required VoidCallback onClick,
   }) {
     return Container(
-        width: 300,
+        width: 400,
         child: ElevatedButton(
             onPressed: onClick,
             child: Row(
@@ -151,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: 'Pick from Camera',
                     icon: Icons.camera,
                     onClick: () => getImage(ImageSource.camera)),
-                Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
                   controller: _textController,
                   decoration: InputDecoration(
@@ -159,27 +175,50 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     hintText: 'Enter a question...',
-                    suffixIcon: IconButton(
-                      onPressed: () => _textController.clear(),
-                      icon: const Icon(Icons.clear),
+                    suffixIcon: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween, // added line
+                      mainAxisSize: MainAxisSize.min, // added line
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.volume_up),
+                          onPressed: () async {
+                            textToSpeech(_textController.text);
+                          },
+                        ),
+                        IconButton(
+                          onPressed: () => _textController.clear(),
+                          icon: const Icon(Icons.clear),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                MaterialButton(
+                Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                ElevatedButton(
                   onPressed: () async {
+                    //textToSpeech(_textController.text);
+
                     String answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
+                    textToSpeech(answer);
                   },
-                  color: Colors.blue,
-                  child:
-                      const Text('Ask', style: TextStyle(color: Colors.white)),
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.orange[400]),
+                    textStyle: MaterialStateProperty.all(
+                      const TextStyle(fontSize: 16),
+                    ),
+                    minimumSize: MaterialStateProperty.all(const Size(150, 50)),
+                  ),
+                  child: const Text('Ask Me!',
+                      style: TextStyle(color: Colors.white)),
                 ),
                 Expanded(
-                  child: Container(
-                      padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                      child: Text('$displayedAnswer',
-                          style: TextStyle(fontSize: 15))),
-                ),
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Text('$displayedAnswer',
+                            style: TextStyle(fontSize: 15)))),
               ],
             ),
           ),
