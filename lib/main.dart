@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'api/speech_api.dart';
-import 'ttstate.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
