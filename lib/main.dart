@@ -132,16 +132,18 @@ class _MyHomePageState extends State<MyHomePage> {
     required VoidCallback onClick,
   }) {
     return Container(
-        width: 400,
+        width: 180,
         child: ElevatedButton(
             onPressed: onClick,
             child: Row(
               children: [
-                Icon(icon),
-                SizedBox(width: 80),
+                Icon(icon,  size: 18),
+                SizedBox(width: 4),
                 Text(
                   title,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(fontSize: 13),
+
                 ),
               ],
             )));
@@ -167,14 +169,18 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: 250, height: 250, fit: BoxFit.cover)
                     : Image.asset("assets/images/logo.jpg"),
                 SizedBox(height: 20),
-                customButton(
-                    title: 'Pick from Gallery',
-                    icon: Icons.image_outlined,
-                    onClick: () => getImage(ImageSource.gallery)),
-                customButton(
-                    title: 'Pick from Camera',
-                    icon: Icons.camera,
-                    onClick: () => getImage(ImageSource.camera)),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    customButton(
+                      title: 'Pick from Gallery',
+                      icon: Icons.image_outlined,
+                      onClick: () => getImage(ImageSource.gallery)),
+                  customButton(
+                      title: 'Pick from Camera',
+                      icon: Icons.camera,
+                      onClick: () => getImage(ImageSource.camera)),
+                ]),
                 Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
                   controller: _textController,
