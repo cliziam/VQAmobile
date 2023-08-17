@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'api/speech_api.dart';
+import 'ttstate.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -33,8 +35,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-enum TtsState { playing, stopped, paused, continued }
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -45,6 +45,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
+  bool isListening = false;
 
   /*for the text-to-speech*/
   FlutterTts fluttertts = FlutterTts();
@@ -118,6 +119,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future toggleRecording() => SpeechApi.toggleRecording(
+      onResult: (text) => setState(() {
+            _textController.text = text;
+          }),
+      onListening: (isListening) {
+        this.isListening = isListening;
+      });
+
   Widget customButton({
     required String title,
     required IconData icon,
@@ -180,6 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           MainAxisAlignment.spaceBetween, // added line
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.mic), onPressed: toggleRecording),
                         IconButton(
                           icon: Icon(Icons.volume_up),
                           onPressed: () async {
