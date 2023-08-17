@@ -114,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void displayAnswer(answer) {
     setState(() {
-      displayedAnswer = "Answer: " + answer;
+      displayedAnswer = answer;
     });
   }
 
@@ -138,12 +138,11 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Row(
               children: [
                 Icon(icon,  size: 18),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   title,
                   textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 13),
-
+                  style: const TextStyle(fontSize: 13),
                 ),
               ],
             )));
@@ -154,21 +153,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Color.fromRGBO(235, 186, 141, 1),
           title: Text(widget.title),
         ),
         body: Center(
           child: Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                SizedBox(height: 20),
+                const SizedBox(height: 1),
                 _image != null
                     ? Image.file(_image!,
                         width: 250, height: 250, fit: BoxFit.cover)
                     : Image.asset("assets/images/logo.jpg"),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
@@ -181,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: Icons.camera,
                       onClick: () => getImage(ImageSource.camera)),
                 ]),
-                Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
+                const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
                   controller: _textController,
                   decoration: InputDecoration(
@@ -195,9 +194,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
                         IconButton(
-                            icon: Icon(Icons.mic), onPressed: toggleRecording),
+                            icon: const Icon(Icons.mic), onPressed: toggleRecording),
                         IconButton(
-                          icon: Icon(Icons.volume_up),
+                          icon: const Icon(Icons.volume_up),
                           onPressed: () async {
                             textToSpeech(_textController.text);
                           },
@@ -210,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
                   onPressed: () async {
                     //textToSpeech(_textController.text);
@@ -230,12 +229,37 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Ask Me!',
                       style: TextStyle(color: Colors.white)),
                 ),
-                Expanded(
-                    child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Text('$displayedAnswer',
-                            style: TextStyle(fontSize: 15)))),
-              ],
+                const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+               Expanded(
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child:
+                    Card(
+                        elevation: 5,
+                        margin: const EdgeInsets.all(8.0),
+                        child:
+                        Column(
+                            children: <Widget>[
+                        const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                        const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:
+                            <Widget>[
+                              Icon(color: Colors.orange,
+                                  size: 30.0,
+                                  Icons.question_answer_rounded),
+                              SizedBox(width: 10),
+                              Text('Answer',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),]),
+                        const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
+                        Padding(
+                          padding: const EdgeInsets.all(15), //apply padding to all four sides
+                          child: Text(displayedAnswer,
+                              style: const TextStyle(fontSize: 15)),
+                        ),]
+                ),),),
+
+               )],
             ),
           ),
         ));
