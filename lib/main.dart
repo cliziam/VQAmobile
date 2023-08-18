@@ -110,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // use this controller to get what the user typed
   TextEditingController _textController = TextEditingController();
-  String displayedAnswer = "Answer: ";
+  String displayedAnswer = " ";
 
   void displayAnswer(answer) {
     setState(() {
@@ -148,12 +148,13 @@ class _MyHomePageState extends State<MyHomePage> {
             )));
   }
 
+  var buttonAudioState = Icon(Icons.volume_off);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Color.fromRGBO(235, 186, 141, 1),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text(widget.title),
         ),
         body: Center(
@@ -162,7 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                const SizedBox(height: 1),
+                const SizedBox(height: 20),
                 _image != null
                     ? Image.file(_image!,
                         width: 250, height: 250, fit: BoxFit.cover)
@@ -213,10 +214,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 ElevatedButton(
                   onPressed: () async {
                     //textToSpeech(_textController.text);
-
                     String answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
-                    textToSpeech(answer);
+                    //textToSpeech(answer);
                   },
                   style: ButtonStyle(
                     backgroundColor:
@@ -230,34 +230,41 @@ class _MyHomePageState extends State<MyHomePage> {
                       style: TextStyle(color: Colors.white)),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
-               Expanded(
+                Expanded(
                 child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    child:
-                    Card(
-                        elevation: 5,
+                    child: Container(
+                      height: 220,
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 3,
                         margin: const EdgeInsets.all(8.0),
                         child:
                         Column(
                             children: <Widget>[
                         const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
-                        const Row(
+                        Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children:
                             <Widget>[
-                              Icon(color: Colors.orange,
+                              const Icon(color: Colors.orange,
                                   size: 30.0,
                                   Icons.question_answer_rounded),
-                              SizedBox(width: 10),
-                              Text('Answer',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),]),
+                              const SizedBox(width: 10),
+                              const Text('Answer',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              IconButton(onPressed: () async => {
+                                  textToSpeech(_textController.text),
+                                  buttonAudioState = Icon(Icons.volume_up)},
+                                  icon: buttonAudioState)]),
+
                         const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
                         Padding(
                           padding: const EdgeInsets.all(15), //apply padding to all four sides
                           child: Text(displayedAnswer,
                               style: const TextStyle(fontSize: 15)),
                         ),]
-                ),),),
+                ),),),),
 
                )],
             ),
