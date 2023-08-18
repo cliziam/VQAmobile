@@ -9,6 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'api/speech_api.dart';
+import 'package:porcupine_flutter/porcupine.dart';
+import 'package:porcupine_flutter/porcupine_manager.dart';
+import 'package:porcupine_flutter/porcupine_error.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -50,6 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
   String displayedAnswer = " ";
   String answer = "";
   var buttonAudioState = Icon(Icons.volume_off);
+  late PorcupineManager _porcupineManager;
+  String _status="";
+  String accessKey= dotenv.env['ACCESSKEY']!;
+
+
+  //porcupine
+  @override
+  void initState() {
+    super.initState();
+    _createPorcupineManager();
+  }
+  
+  @override
+  void dispose() {
+    super.dispose();
+    // ignore: unnecessary_null_comparison
+    if (_porcupineManager != null) _porcupineManager.stop();
+  }
 
   /*for the text-to-speech*/
   FlutterTts fluttertts = FlutterTts();
@@ -83,6 +104,37 @@ class _MyHomePageState extends State<MyHomePage> {
     final image = File('${directory.path}/$name');
     return File(imagePath).copy(image.path);
   }
+
+  _createPorcupineManager() async{
+    try {
+       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
+        accessKey, 
+        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        _wakeWordCallBack,
+      );
+      _porcupineManager.start();
+    } on PorcupineException  catch (err) {
+        print('------------------------');
+        print(err.message);
+        print('------------------------');
+    }
+  }
+   _wakeWordCallBack(int keywordIndex) async {
+    print('------------------------');
+    print('------------------------');
+    if (keywordIndex == 0) {
+      print('Voice started');
+      _status = 'Voice Started';
+      setState(() {});
+    } else if (keywordIndex == 1) {
+      print('Voice Ended');
+      _status = 'Voice Ended';
+      setState(() {});
+    }
+    print('------------------------');
+    print('------------------------');
+  }
+
 
   Future<String> getAnswer(String question) async {
     //ByteData bytes = await rootBundle.load('assets/images/cat.jpg');
@@ -214,6 +266,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
                   onPressed: () async {
+                    
                     //textToSpeech(_textController.text);
                     answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
