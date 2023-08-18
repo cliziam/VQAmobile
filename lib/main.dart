@@ -45,6 +45,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
   bool isListening = false;
+  // use this controller to get what the user typed
+  TextEditingController _textController = TextEditingController();
+  String displayedAnswer = " ";
+  String answer = "";
+  var buttonAudioState = Icon(Icons.volume_off);
 
   /*for the text-to-speech*/
   FlutterTts fluttertts = FlutterTts();
@@ -108,10 +113,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return prediction.output;
   }
 
-  // use this controller to get what the user typed
-  TextEditingController _textController = TextEditingController();
-  String displayedAnswer = " ";
-
   void displayAnswer(answer) {
     setState(() {
       displayedAnswer = answer;
@@ -137,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: onClick,
             child: Row(
               children: [
-                Icon(icon,  size: 18),
+                Icon(icon, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   title,
@@ -148,8 +149,6 @@ class _MyHomePageState extends State<MyHomePage> {
             )));
   }
 
-  var buttonAudioState = Icon(Icons.volume_off);
-  String answer = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -172,16 +171,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(height: 20),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    customButton(
-                      title: 'Pick from Gallery',
-                      icon: Icons.image_outlined,
-                      onClick: () => getImage(ImageSource.gallery)),
-                  customButton(
-                      title: 'Pick from Camera',
-                      icon: Icons.camera,
-                      onClick: () => getImage(ImageSource.camera)),
-                ]),
+                    children: <Widget>[
+                      customButton(
+                          title: 'Pick from Gallery',
+                          icon: Icons.image_outlined,
+                          onClick: () => getImage(ImageSource.gallery)),
+                      customButton(
+                          title: 'Pick from Camera',
+                          icon: Icons.camera,
+                          onClick: () => getImage(ImageSource.camera)),
+                    ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
                   controller: _textController,
@@ -196,7 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
                         IconButton(
-                            icon: const Icon(Icons.mic), onPressed: toggleRecording),
+                            icon: const Icon(Icons.mic),
+                            onPressed: toggleRecording),
                         IconButton(
                           icon: const Icon(Icons.volume_up),
                           onPressed: () async {
@@ -232,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 Expanded(
-                child: SingleChildScrollView(
+                  child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Container(
                       height: 220,
@@ -240,35 +240,41 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Colors.white,
                         elevation: 3,
                         margin: const EdgeInsets.all(8.0),
-                        child:
-                        Column(
-                            children: <Widget>[
-                        const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children:
-                            <Widget>[
-                              const Icon(color: Colors.orange,
-                                  size: 30.0,
-                                  Icons.question_answer_rounded),
-                              const SizedBox(width: 10),
-                              const Text('Answer',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              IconButton(onPressed: () async =>
-                              {
-                                textToSpeech(answer),
-                              },
-                              icon: const Icon(Icons.volume_up))]),
-
-                        const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
-                        Padding(
-                          padding: const EdgeInsets.all(15), //apply padding to all four sides
-                          child: Text(displayedAnswer,
-                              style: const TextStyle(fontSize: 15)),
-                        ),]
-                ),),),),
-
-               )],
+                        child: Column(children: <Widget>[
+                          const Padding(
+                              padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                const Icon(
+                                    color: Colors.orange,
+                                    size: 30.0,
+                                    Icons.question_answer_rounded),
+                                const SizedBox(width: 10),
+                                const Text('Answer',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold)),
+                                IconButton(
+                                    onPressed: () async => {
+                                          textToSpeech(answer),
+                                        },
+                                    icon: const Icon(Icons.volume_up))
+                              ]),
+                          const Padding(
+                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
+                          Padding(
+                            padding: const EdgeInsets.all(
+                                15), //apply padding to all four sides
+                            child: Text(displayedAnswer,
+                                style: const TextStyle(fontSize: 15)),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  ),
+                )
+              ],
             ),
           ),
         ));
