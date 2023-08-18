@@ -149,6 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   var buttonAudioState = Icon(Icons.volume_off);
+  String answer = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,7 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ElevatedButton(
                   onPressed: () async {
                     //textToSpeech(_textController.text);
-                    String answer = await getAnswer(_textController.text);
+                    answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
                     //textToSpeech(answer);
                   },
@@ -253,10 +254,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               const SizedBox(width: 10),
                               const Text('Answer',
                                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              IconButton(onPressed: () async => {
-                                  textToSpeech(_textController.text),
-                                  buttonAudioState = Icon(Icons.volume_up)},
-                                  icon: buttonAudioState)]),
+                              IconButton(onPressed: () async =>
+                              {
+                                textToSpeech(answer),
+                              },
+                              icon: const Icon(Icons.volume_up))]),
 
                         const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
                         Padding(
