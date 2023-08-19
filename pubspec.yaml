@@ -78,7 +78,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
       - .env
-      - assets/images/logo.jpg
+      - assets/images/logo.png
       - assets/audio/letsgo.mp3
       - assets/WakeWords/Hello_My_App.ppn
       - assets/WakeWords/Hey_My_App.ppn

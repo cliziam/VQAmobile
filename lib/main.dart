@@ -9,10 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'api/speech_api.dart';
-import 'package:porcupine_flutter/porcupine.dart';
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -49,11 +47,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
   bool isListening = false;
+  bool isLoading=false;
   // use this controller to get what the user typed
-  TextEditingController _textController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
   String displayedAnswer = " ";
   String answer = "";
-  var buttonAudioState = Icon(Icons.volume_off);
+  var buttonAudioState = const Icon(Icons.volume_off);
   late PorcupineManager _porcupineManager;
   String accessKey = dotenv.env['ACCESSKEY']!;
 
@@ -89,9 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
       final imagePermanent = await saveFilePermanently(image.path);
 
       setState(() {
-        this._image = imagePermanent; //imageTemporary;
+        _image = imagePermanent; //imageTemporary;
       });
     } on PlatformException catch (e) {
+      // ignore: avoid_print
       print("Failed to pick image: $e");
     }
   }
@@ -153,7 +153,9 @@ class _MyHomePageState extends State<MyHomePage> {
     Prediction prediction = await Replicate.instance.predictions.get(
       id: predictionsPageList.results.elementAt(0).id,
     );
+    isLoading=false;
     return prediction.output;
+    
   }
 
   void displayAnswer(answer) {
@@ -198,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Color.fromARGB(255, 133, 151, 131),
           title: Text(widget.title),
         ),
         body: Center(
@@ -207,12 +209,12 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 _image != null
                     ? Image.file(_image!,
                         width: 250, height: 250, fit: BoxFit.cover)
-                    : Image.asset("assets/images/logo.jpg"),
-                const SizedBox(height: 20),
+                    : Image.asset("assets/images/logo.png", width: 250, height: 250) ,
+                const SizedBox(height: 10),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -264,14 +266,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 ElevatedButton(
                   onPressed: () async {
                     //textToSpeech(_textController.text);
-                    displayAnswer("I'm thinking...");
+                    setState(() {
+                      isLoading=true;
+                    });
+          
                     answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
                     //textToSpeech(answer);
                   },
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all(Colors.orange[400]),
+                        MaterialStateProperty.all(Color.fromARGB(255, 133, 151, 131)),
                     textStyle: MaterialStateProperty.all(
                       const TextStyle(fontSize: 16),
                     ),
@@ -296,10 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                const Icon(
-                                    color: Colors.orange,
-                                    size: 30.0,
-                                    Icons.question_answer_rounded),
+                          
                                 const SizedBox(width: 10),
                                 const Text('Answer',
                                     style: TextStyle(
@@ -316,8 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           Padding(
                             padding: const EdgeInsets.all(
                                 15), //apply padding to all four sides
-                            child: Text(displayedAnswer,
-                                style: const TextStyle(fontSize: 15)),
+                            child: !isLoading?   Text(displayedAnswer,
+                                style: const TextStyle(fontSize: 15)): const CircularProgressIndicator(),
                           ),
                         ]),
                       ),
