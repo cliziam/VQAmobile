@@ -105,9 +105,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _createPorcupineManager() async {
     try {
-      _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
+        _porcupineManager = await PorcupineManager.fromKeywordPaths(
         accessKey,
-        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        ["assets/WakeWords/Hello_My_App.ppn", "assets/WakeWords/Hey_My_App.ppn"],
         _wakeWordCallBack,
       );
       _porcupineManager.start();
@@ -119,11 +119,11 @@ class _MyHomePageState extends State<MyHomePage> {
   _wakeWordCallBack(int keywordIndex) async {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
-      print('Picovoice word detected');
+      print('Hello My App word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
-      print('Porcupine word detected');
+      print('Hey My App word detected');
     }
   }
 

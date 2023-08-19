@@ -80,6 +80,8 @@ flutter:
       - .env
       - assets/images/logo.jpg
       - assets/audio/letsgo.mp3
+      - assets/WakeWords/Hello_My_App.ppn
+      - assets/WakeWords/Hey_My_App.ppn
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
