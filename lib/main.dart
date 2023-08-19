@@ -55,7 +55,15 @@ class _MyHomePageState extends State<MyHomePage> {
   var buttonAudioState = const Icon(Icons.volume_off);
   late PorcupineManager _porcupineManager;
   String accessKey = dotenv.env['ACCESSKEY']!;
+  final FlutterTts tts = FlutterTts();
+  final TextEditingController controller =
+      TextEditingController(text: 'loading in progress');
 
+  // ignore: non_constant_identifier_names
+  Home() {
+    tts.setLanguage('en');
+    tts.setSpeechRate(0.4);
+  }
   @override
   void initState() {
     super.initState();
@@ -263,13 +271,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+            
                 ElevatedButton(
                   onPressed: () async {
+                    tts.speak(controller.text);
                     //textToSpeech(_textController.text);
                     setState(() {
                       isLoading=true;
                     });
-          
+                    
+                   
+
                     answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
                     //textToSpeech(answer);
@@ -301,7 +313,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                          
                                 const SizedBox(width: 10),
                                 const Text('Answer',
                                     style: TextStyle(
