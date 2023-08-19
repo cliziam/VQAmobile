@@ -43,6 +43,7 @@ dependencies:
   flutter_tts: ^3.7.0
   porcupine_flutter: ^2.2.1
   speech_to_text: ^6.3.0
+  audioplayers: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +79,7 @@ flutter:
   assets:
       - .env
       - assets/images/logo.jpg
+      - assets/audio/letsgo.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
