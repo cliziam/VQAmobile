@@ -111,11 +111,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(imagePath).copy(image.path);
   }
 
+
   _createPorcupineManager() async {
     try {
         _porcupineManager = await PorcupineManager.fromKeywordPaths(
         accessKey,
-        ["assets/WakeWords/Hello_My_App.ppn", "assets/WakeWords/Hey_My_App.ppn"],
+        ["assets/WakeWords/Hello_My_App_2.ppn", "assets/WakeWords/Hey_My_App.ppn"],
         _wakeWordCallBack,
       );
       _porcupineManager.start();

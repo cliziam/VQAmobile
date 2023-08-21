@@ -82,6 +82,7 @@ flutter:
       - assets/audio/letsgo.mp3
       - assets/WakeWords/Hello_My_App.ppn
       - assets/WakeWords/Hey_My_App.ppn
+      - assets/WakeWords/Hello_My_App_2.ppn
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
