@@ -66,11 +66,11 @@ class _MyHomePageState extends State<MyHomePage> {
     tts.setSpeechRate(0.4);
   }
 
-  /*@override
+  @override
   void initState() {
     super.initState();
     _createPorcupineManager();
-  }*/
+  }
 
   /*@override
   void dispose() {
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(imagePath).copy(image.path);
   }
 
-  /*_createPorcupineManager() async {
+  _createPorcupineManager() async {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
@@ -124,9 +124,9 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PorcupineException catch (err) {
       print(err.message);
     }
-  }*/
+  }
 
-  /* _wakeWordCallBack(int keywordIndex) async {
+  _wakeWordCallBack(int keywordIndex) async {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
       print('Hello My App word detected');
@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (keywordIndex == 1) {
       print('Hey My App word detected');
     }
-  }*/
+  }
 
   Future<String> getAnswer(String question) async {
     //ByteData bytes = await rootBundle.load('assets/images/cat.jpg');
@@ -179,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
       onListening: (isListening) {
         this.isListening = isListening;
-        //_porcupineManager.start();
+        _porcupineManager.start();
       });
 
   Widget customButton({
@@ -253,10 +253,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         IconButton(
                             icon: const Icon(Icons.mic),
                             onPressed: () {
-                              //_porcupineManager.stop();
+                              _porcupineManager.stop();
                               //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
                               toggleRecording();
-                              //_porcupineManager.start();
+                              _porcupineManager.start();
                             }),
                         IconButton(
                           icon: const Icon(Icons.volume_up),
