@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 133, 151, 131),
+          backgroundColor: Color.fromARGB(255, 218,229,223),
           title: Text(widget.title),
         ),
         body: Center(
@@ -298,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Ask Me!',
                       style: TextStyle(color: Colors.white)),
                 ),
-                const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
+                const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
@@ -317,7 +317,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const SizedBox(width: 12),
                                 const Text('Answer',
                                     style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold)),
                                 IconButton(
                                     onPressed: () async => {
