@@ -48,7 +48,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
   bool isListening = false;
-  bool isLoading=false;
+  bool isLoading = false;
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
   String displayedAnswer = " ";
@@ -65,11 +65,12 @@ class _MyHomePageState extends State<MyHomePage> {
     tts.setLanguage('en');
     tts.setSpeechRate(0.4);
   }
-  @override
+
+  /*@override
   void initState() {
     super.initState();
     _createPorcupineManager();
-  }
+  }*/
 
   /*@override
   void dispose() {
@@ -112,31 +113,29 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(imagePath).copy(image.path);
   }
 
-  _createPorcupineManager() async {
+  /*_createPorcupineManager() async {
     try {
-        _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
-          accessKey,
-          [BuiltInKeyword.AMERICANO, BuiltInKeyword.COMPUTER],
-          _wakeWordCallBack,
-        );
+      _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
+        accessKey,
+        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        _wakeWordCallBack,
+      );
       _porcupineManager.start();
     } on PorcupineException catch (err) {
       print(err.message);
     }
-  }
+  }*/
 
-  _wakeWordCallBack(int keywordIndex) async {
+  /* _wakeWordCallBack(int keywordIndex) async {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
-      print('AMERICANO word detected');
+      print('Hello My App word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
-      print('COMPUTER word detected');
-      toggleRecording();
-
+      print('Hey My App word detected');
     }
-  }
+  }*/
 
   Future<String> getAnswer(String question) async {
     //ByteData bytes = await rootBundle.load('assets/images/cat.jpg');
@@ -164,9 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Prediction prediction = await Replicate.instance.predictions.get(
       id: predictionsPageList.results.elementAt(0).id,
     );
-    isLoading=false;
+    isLoading = false;
     return prediction.output;
-
   }
 
   void displayAnswer(answer) {
@@ -181,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
       onListening: (isListening) {
         this.isListening = isListening;
-        _porcupineManager.start();
+        //_porcupineManager.start();
       });
 
   Widget customButton({
@@ -211,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 218,229,223),
+          backgroundColor: Color.fromARGB(255, 133, 151, 131),
           title: Text(widget.title),
         ),
         body: Center(
@@ -224,8 +222,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 _image != null
                     ? Image.file(_image!,
                         width: 250, height: 250, fit: BoxFit.cover)
-                    : Image.asset("assets/images/logo.png", width: 250, height: 250) ,
-                const SizedBox(height: 20),
+                    : Image.asset("assets/images/logo.png",
+                        width: 250, height: 250),
+                const SizedBox(height: 10),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -254,10 +253,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         IconButton(
                             icon: const Icon(Icons.mic),
                             onPressed: () {
-                              _porcupineManager.stop();
+                              //_porcupineManager.stop();
                               //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
                               toggleRecording();
-                              _porcupineManager.start();
+                              //_porcupineManager.start();
                             }),
                         IconButton(
                           icon: const Icon(Icons.volume_up),
@@ -274,25 +273,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
-
                 ElevatedButton(
                   onPressed: () async {
                     tts.speak(controller.text);
                     //textToSpeech(_textController.text);
                     setState(() {
-                      isLoading=true;
+                      isLoading = true;
                     });
-
-
 
                     answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
                     //textToSpeech(answer);
                   },
                   style: ButtonStyle(
-                    shadowColor: MaterialStateProperty.all(Color.fromARGB(255, 236,187,137)),
-                    backgroundColor:
-                        MaterialStateProperty.all(Color.fromARGB(255, 236,187,137)),
+                    backgroundColor: MaterialStateProperty.all(
+                        Color.fromARGB(255, 133, 151, 131)),
                     textStyle: MaterialStateProperty.all(
                       const TextStyle(fontSize: 16),
                     ),
@@ -301,7 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Ask Me!',
                       style: TextStyle(color: Colors.white)),
                 ),
-                const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
+                const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
@@ -317,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 const Text('Answer',
                                     style: TextStyle(
                                         fontSize: 20,
@@ -333,8 +328,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           Padding(
                             padding: const EdgeInsets.all(
                                 15), //apply padding to all four sides
-                            child: !isLoading?   Text(displayedAnswer,
-                                style: const TextStyle(fontSize: 15)): const CircularProgressIndicator(),
+                            child: !isLoading
+                                ? Text(displayedAnswer,
+                                    style: const TextStyle(fontSize: 15))
+                                : const CircularProgressIndicator(),
                           ),
                         ]),
                       ),
