@@ -222,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? Image.file(_image!,
                         width: 250, height: 250, fit: BoxFit.cover)
                     : Image.asset("assets/images/logo.png", width: 250, height: 250) ,
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -287,8 +287,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     //textToSpeech(answer);
                   },
                   style: ButtonStyle(
+                    shadowColor: MaterialStateProperty.all(Color.fromARGB(255, 236,187,137)),
                     backgroundColor:
-                        MaterialStateProperty.all(Color.fromARGB(255, 133, 151, 131)),
+                        MaterialStateProperty.all(Color.fromARGB(255, 236,187,137)),
                     textStyle: MaterialStateProperty.all(
                       const TextStyle(fontSize: 16),
                     ),
@@ -313,10 +314,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 12),
                                 const Text('Answer',
                                     style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 22,
                                         fontWeight: FontWeight.bold)),
                                 IconButton(
                                     onPressed: () async => {
