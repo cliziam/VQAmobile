@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:porcupine_flutter/porcupine.dart';
 import 'package:replicate/replicate.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
@@ -111,14 +112,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(imagePath).copy(image.path);
   }
 
-
   _createPorcupineManager() async {
     try {
-        _porcupineManager = await PorcupineManager.fromKeywordPaths(
-        accessKey,
-        ["assets/WakeWords/Hello_My_App_2.ppn", "assets/WakeWords/Hey_My_App.ppn"],
-        _wakeWordCallBack,
-      );
+        _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
+          accessKey,
+          [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+          _wakeWordCallBack,
+        );
       _porcupineManager.start();
     } on PorcupineException catch (err) {
       print(err.message);
@@ -128,11 +128,11 @@ class _MyHomePageState extends State<MyHomePage> {
   _wakeWordCallBack(int keywordIndex) async {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
-      print('Hello My App word detected');
+      print('PICOVOICE word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
-      print('Hey My App word detected');
+      print('PORCUPINE word detected');
     }
   }
 
@@ -164,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     isLoading=false;
     return prediction.output;
-    
+
   }
 
   void displayAnswer(answer) {
@@ -272,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
-            
+
                 ElevatedButton(
                   onPressed: () async {
                     tts.speak(controller.text);
@@ -280,8 +280,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     setState(() {
                       isLoading=true;
                     });
-                    
-                   
+
+
 
                     answer = await getAnswer(_textController.text);
                     displayAnswer(answer);
