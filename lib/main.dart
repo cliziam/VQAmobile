@@ -69,7 +69,8 @@ class _MyHomePageState extends State<MyHomePage> {
       TextEditingController(text: 'loading in progress');
   
   final TextEditingController controllerAlert =
-      TextEditingController(text: 'You have to upload a question or image, please check');
+      TextEditingController(text: 'You have to upload an image and a question '
+          'in order to proceed. Please check.');
 
   // ignore: non_constant_identifier_names
   Home() {
@@ -122,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
-        [BuiltInKeyword.OK_GOOGLE, BuiltInKeyword.HEY_SIRI],
+        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
         _wakeWordCallBack,
       );
       _porcupineManager.start();
@@ -136,12 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
-      print('OK GOOGLE word detected');
+      print('PICOVOICE word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
       // ignore: avoid_print
-      print('HEY SIRI word detected');
+      print('PORCUPINE word detected');
       toggleRecording();
 
     }
@@ -193,6 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
         if (this.isListening == false) _porcupineManager.start();
       });
 
+
   Widget customButton({
     required String title,
     required IconData icon,
@@ -206,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: onClick,
               child: Row(
                 children: [
-                  Icon(icon, size: 18),
+                  Icon(icon, size: 20),
                   const SizedBox(width: 2),
                   Text(
                     title,
@@ -219,16 +221,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
+  bool askMeButtonState = false;
   String? get _errorText {
     final text = _textController.value.text;
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
-    }
-    else{
-      isFilledQuestion=true;
-    }
-    if (text.length < 4) {
-      return 'Too short';
+    if (askMeButtonState == true) {
+      if (text.isEmpty) {
+        return 'Can\'t be empty';
+      }
+      else {
+        isFilledQuestion = true;
+      }
+      if (text.length < 4) {
+        return 'Too short';
+      }
     }
     return null;
 }
@@ -236,12 +241,14 @@ class _MyHomePageState extends State<MyHomePage> {
 void showAlertDialog(BuildContext context) {
       Widget okButton = TextButton(
         child: const Text("Ok"),
-        onPressed: () {     Navigator.of(context).pop(); // dismiss dialog
+        onPressed: () {
+          Navigator.of(context).pop(); // dismiss dialog
     },
       );
       AlertDialog alert = AlertDialog(
         title: const Text("Error!"),
-        content: const Text("You have to upload an image and a question in order to proceed."),
+        content: const Text("You have to upload an image and a "
+            "question in order to proceed."),
         actions: [
           okButton,
         ],
@@ -260,7 +267,7 @@ void showAlertDialog(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 133, 151, 131),
+          backgroundColor: const Color.fromARGB(255, 217, 229, 222),
           title: Text(widget.title),
         ),
         body: Center(
@@ -332,7 +339,14 @@ void showAlertDialog(BuildContext context) {
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
                   onPressed: () async {
-                    if (isFilledImage && isFilledQuestion ){
+                    final text = _textController.value.text;
+                    setState(() {
+                      isFilledQuestion = text.isNotEmpty;
+                      askMeButtonState = true;
+                    });
+                    print(askMeButtonState);
+                    print(isFilledQuestion);
+                    if (isFilledImage && isFilledQuestion){
                       tts.speak(controllerLoading.text);
                       setState(() {
                         isLoading = true;
@@ -340,15 +354,18 @@ void showAlertDialog(BuildContext context) {
                       answer = await getAnswer(_textController.text);
                       displayAnswer(answer);
                     }
-                    else{
+                    else {
                       showAlertDialog(context);
                       tts.speak(controllerAlert.text);
-               
                     }
+
+
                   },
                   style: ButtonStyle(
+                    shadowColor: MaterialStateProperty.all(
+                        const Color.fromARGB(255, 235, 186, 141)),
                     backgroundColor: MaterialStateProperty.all(
-                        const Color.fromARGB(255, 133, 151, 131)),
+                        const Color.fromARGB(255, 235, 186, 141)),
                     textStyle: MaterialStateProperty.all(
                       const TextStyle(fontSize: 16),
                     ),
