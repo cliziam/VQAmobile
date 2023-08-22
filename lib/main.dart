@@ -7,11 +7,12 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'api/speech_api.dart';
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
+// ignore: depend_on_referenced_packages
+import 'package:path/path.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -29,7 +30,9 @@ class MyApp extends StatelessWidget {
       title: 'VQAsk',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xD9E5DE), background: Colors.white),
+            // ignore: use_full_hex_values_for_flutter_colors
+            seedColor: const Color(0xD9E5DE),
+            background: Colors.white),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'VQAsk Application'),
@@ -72,13 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _createPorcupineManager();
   }
 
-  /*@override
-  void dispose() {
-    super.dispose();
-    // ignore: unnecessary_null_comparison
-    if (_porcupineManager != null) _porcupineManager.stop();
-  }*/
-
   /*for the text-to-speech*/
   FlutterTts fluttertts = FlutterTts();
 
@@ -94,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final image = await ImagePicker().pickImage(source: source);
       if (image == null) return;
-      //final imageTemporary = File(image.path);
+      //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
 
       setState(() {
@@ -122,18 +118,21 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       _porcupineManager.start();
     } on PorcupineException catch (err) {
-      print(err.message);
+      // ignore: avoid_print
+      print("Porcupine exception: $err.message");
     }
   }
 
   _wakeWordCallBack(int keywordIndex) async {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
-      print('Hello My App word detected');
+      // ignore: avoid_print
+      print('Picovoice word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
-      print('Hey My App word detected');
+      // ignore: avoid_print
+      print('Porcupine word detected');
     }
   }
 
@@ -154,7 +153,8 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       );
     } catch (e) {
-      //nothing
+      // ignore: avoid_print
+      print("Failed to create the prediction: $e");
     }
     await Future.delayed(const Duration(seconds: 7));
     PaginatedPredictions predictionsPageList =
@@ -179,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
       onListening: (isListening) {
         this.isListening = isListening;
-        _porcupineManager.start();
+        if (this.isListening == false) _porcupineManager.start();
       });
 
   Widget customButton({
@@ -187,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
     required IconData icon,
     required VoidCallback onClick,
   }) {
-    return Container(
+    return SizedBox(
         width: 180,
         child: ElevatedButton(
             onPressed: onClick,
@@ -209,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 133, 151, 131),
+          backgroundColor: const Color.fromARGB(255, 133, 151, 131),
           title: Text(widget.title),
         ),
         body: Center(
@@ -256,7 +256,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               _porcupineManager.stop();
                               //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
                               toggleRecording();
-                              _porcupineManager.start();
+                              //_porcupineManager.start();
                             }),
                         IconButton(
                           icon: const Icon(Icons.volume_up),
@@ -287,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(
-                        Color.fromARGB(255, 133, 151, 131)),
+                        const Color.fromARGB(255, 133, 151, 131)),
                     textStyle: MaterialStateProperty.all(
                       const TextStyle(fontSize: 16),
                     ),
@@ -300,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    child: Container(
+                    child: SizedBox(
                       height: 220,
                       child: Card(
                         color: Colors.white,
