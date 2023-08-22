@@ -52,6 +52,9 @@ class _MyHomePageState extends State<MyHomePage> {
   File? _image;
   bool isListening = false;
   bool isLoading = false;
+  bool isFilledImage=false;
+  bool isFilledQuestion=false;
+
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
   String displayedAnswer = " ";
@@ -60,13 +63,16 @@ class _MyHomePageState extends State<MyHomePage> {
   late PorcupineManager _porcupineManager;
   String accessKey = dotenv.env['ACCESSKEY']!;
   final FlutterTts tts = FlutterTts();
-  final TextEditingController controller =
+  final TextEditingController controllerLoading =
       TextEditingController(text: 'loading in progress');
+  
+  final TextEditingController controllerAlert =
+      TextEditingController(text: 'You havent uploaded a question or image, please check');
 
   // ignore: non_constant_identifier_names
   Home() {
     tts.setLanguage('en');
-    tts.setSpeechRate(0.4);
+    tts.setSpeechRate(0.1);
   }
 
   @override
@@ -94,7 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final imagePermanent = await saveFilePermanently(image.path);
 
       setState(() {
-        _image = imagePermanent; //imageTemporary;
+        _image = imagePermanent;
+        isFilledImage=true; //imageTemporary;
       });
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -113,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
-        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        [BuiltInKeyword.OK_GOOGLE, BuiltInKeyword.HEY_SIRI],
         _wakeWordCallBack,
       );
       _porcupineManager.start();
@@ -127,12 +134,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
-      print('Picovoice word detected');
+      print('OK GOOGLE word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       toggleRecording();
     } else if (keywordIndex == 1) {
       // ignore: avoid_print
-      print('Porcupine word detected');
+      print('HEY SIRI word detected');
+      toggleRecording();
+
     }
   }
 
@@ -186,23 +195,63 @@ class _MyHomePageState extends State<MyHomePage> {
     required String title,
     required IconData icon,
     required VoidCallback onClick,
+    required context,
   }) {
-    return SizedBox(
-        width: 180,
-        child: ElevatedButton(
-            onPressed: onClick,
-            child: Row(
-              children: [
-                Icon(icon, size: 18),
-                const SizedBox(width: 4),
-                Text(
-                  title,
-                  textAlign: TextAlign.start,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ],
-            )));
+    return Expanded(
+      child: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: ElevatedButton(
+              onPressed: onClick,
+              child: Row(
+                children: [
+                  Icon(icon, size: 18),
+                  const SizedBox(width: 2),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ],
+              ))),
+    );
   }
+
+
+  String? get _errorText {
+    final text = _textController.value.text;
+    if (text.isEmpty) {
+      return 'Can\'t be empty';
+    }
+    else{
+      isFilledQuestion=true;
+    }
+    if (text.length < 4) {
+      return 'Too short';
+    }
+    return null;
+}
+
+void showAlertDialog(BuildContext context) {
+      Widget okButton = TextButton(
+        child: const Text("Ok"),
+        onPressed: () {     Navigator.of(context).pop(); // dismiss dialog
+    },
+      );
+      AlertDialog alert = AlertDialog(
+        title: const Text("Error!"),
+        content: const Text("You have to upload an image and a question in order to proceed."),
+        actions: [
+          okButton,
+        ],
+      );
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -231,11 +280,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       customButton(
                           title: 'Pick from Gallery',
                           icon: Icons.image_outlined,
-                          onClick: () => getImage(ImageSource.gallery)),
+                          onClick: () => getImage(ImageSource.gallery),
+                          context: context),
                       customButton(
                           title: 'Pick from Camera',
                           icon: Icons.camera,
-                          onClick: () => getImage(ImageSource.camera)),
+                          onClick: () => getImage(ImageSource.camera),
+                          context: context
+                          
+                          ),
                     ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
@@ -243,8 +296,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15.0),
+                      
                     ),
                     hintText: 'Enter a question...',
+                    errorText: _errorText,
                     suffixIcon: Row(
                       mainAxisAlignment:
                           MainAxisAlignment.spaceBetween, // added line
@@ -275,15 +330,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
                   onPressed: () async {
-                    tts.speak(controller.text);
-                    //textToSpeech(_textController.text);
-                    setState(() {
-                      isLoading = true;
-                    });
-
-                    answer = await getAnswer(_textController.text);
-                    displayAnswer(answer);
-                    //textToSpeech(answer);
+                    if (isFilledImage && isFilledQuestion ){
+                      tts.speak(controllerLoading.text);
+                      setState(() {
+                        isLoading = true;
+                      });
+                      answer = await getAnswer(_textController.text);
+                      displayAnswer(answer);
+                    }
+                    else{
+                      showAlertDialog(context);
+                      tts.speak(controllerAlert.text);
+               
+                    }
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(
