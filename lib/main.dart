@@ -23,9 +23,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
     return MaterialApp(
       title: 'VQAsk',
       theme: ThemeData(
@@ -67,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
       TextEditingController(text: 'loading in progress');
   
   final TextEditingController controllerAlert =
-      TextEditingController(text: 'You havent uploaded a question or image, please check');
+      TextEditingController(text: 'You have to upload a question or image, please check');
 
   // ignore: non_constant_identifier_names
   Home() {
