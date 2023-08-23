@@ -25,9 +25,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return MaterialApp(
       title: 'VQAsk',
       theme: ThemeData(
@@ -54,8 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   File? _image;
   bool isListening = false;
   bool isLoading = false;
-  bool isFilledImage=false;
-  bool isFilledQuestion=false;
+  bool isFilledImage = false;
+  bool isFilledQuestion = false;
 
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
@@ -66,10 +66,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String accessKey = dotenv.env['ACCESSKEY']!;
   final FlutterTts tts = FlutterTts();
   final TextEditingController controllerLoading =
-      TextEditingController(text: 'loading in progress');
-  
-  final TextEditingController controllerAlert =
-      TextEditingController(text: 'You have to upload an image and a question '
+      TextEditingController(text: 'I am thinking...');
+
+  final TextEditingController controllerAlert = TextEditingController(
+      text: 'You have to upload an image and a question '
           'in order to proceed. Please check.');
 
   // ignore: non_constant_identifier_names
@@ -104,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       setState(() {
         _image = imagePermanent;
-        isFilledImage=true; //imageTemporary;
+        isFilledImage = true; //imageTemporary;
       });
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -143,8 +143,8 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (keywordIndex == 1) {
       // ignore: avoid_print
       print('PORCUPINE word detected');
-      toggleRecording();
-
+      //toggleRecording();
+      getImage(ImageSource.camera);
     }
   }
 
@@ -194,7 +194,6 @@ class _MyHomePageState extends State<MyHomePage> {
         if (this.isListening == false) _porcupineManager.start();
       });
 
-
   Widget customButton({
     required String title,
     required IconData icon,
@@ -220,15 +219,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
   bool askMeButtonState = false;
   String? get _errorText {
     final text = _textController.value.text;
     if (askMeButtonState == true) {
       if (text.isEmpty) {
         return 'Can\'t be empty';
-      }
-      else {
+      } else {
         isFilledQuestion = true;
       }
       if (text.length < 4) {
@@ -236,31 +233,30 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     return null;
-}
+  }
 
-void showAlertDialog(BuildContext context) {
-      Widget okButton = TextButton(
-        child: const Text("Ok"),
-        onPressed: () {
-          Navigator.of(context).pop(); // dismiss dialog
-    },
-      );
-      AlertDialog alert = AlertDialog(
-        title: const Text("Error!"),
-        content: const Text("You have to upload an image and a "
-            "question in order to proceed."),
-        actions: [
-          okButton,
-        ],
-      );
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return alert;
-        },
-      );
-}
-
+  void showAlertDialog(BuildContext context) {
+    Widget okButton = TextButton(
+      child: const Text("Ok"),
+      onPressed: () {
+        Navigator.of(context).pop(); // dismiss dialog
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: const Text("Error!"),
+      content: const Text("You have to upload an image and a "
+          "question in order to proceed."),
+      actions: [
+        okButton,
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -295,9 +291,7 @@ void showAlertDialog(BuildContext context) {
                           title: 'Pick from Camera',
                           icon: Icons.camera,
                           onClick: () => getImage(ImageSource.camera),
-                          context: context
-                          
-                          ),
+                          context: context),
                     ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
@@ -305,7 +299,6 @@ void showAlertDialog(BuildContext context) {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15.0),
-                      
                     ),
                     hintText: 'Enter a question...',
                     errorText: _errorText,
@@ -344,22 +337,19 @@ void showAlertDialog(BuildContext context) {
                       isFilledQuestion = text.isNotEmpty;
                       askMeButtonState = true;
                     });
-                    print(askMeButtonState);
-                    print(isFilledQuestion);
-                    if (isFilledImage && isFilledQuestion){
+                    //print(askMeButtonState);
+                    //print(isFilledQuestion);
+                    if (isFilledImage && isFilledQuestion) {
                       tts.speak(controllerLoading.text);
                       setState(() {
                         isLoading = true;
                       });
                       answer = await getAnswer(_textController.text);
                       displayAnswer(answer);
-                    }
-                    else {
+                    } else {
                       showAlertDialog(context);
                       tts.speak(controllerAlert.text);
                     }
-
-
                   },
                   style: ButtonStyle(
                     shadowColor: MaterialStateProperty.all(
