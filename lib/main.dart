@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'DescribePhoto.dart';
 import 'api/speech_api.dart';
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
@@ -201,21 +202,20 @@ class _MyHomePageState extends State<MyHomePage> {
     required context,
   }) {
     return Expanded(
-      child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: ElevatedButton(
+      child:
+          ElevatedButton(
               onPressed: onClick,
               child: Row(
                 children: [
                   Icon(icon, size: 20),
-                  const SizedBox(width: 2),
+                  const SizedBox(width: 10),
                   Text(
                     title,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 10),
                   ),
                 ],
-              ))),
+              )),
     );
   }
 
@@ -265,6 +265,22 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 217, 229, 222),
           title: Text(widget.title),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(
+                Icons.photo_size_select_large,
+                color: Colors.black,
+                size: 30,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DescribePhoto()),
+                );
+                },
+
+            )
+          ],
         ),
         body: Center(
           child: Padding(
@@ -280,13 +296,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: 250, height: 250),
                 const SizedBox(height: 10),
                 Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
                     children: <Widget>[
                       customButton(
                           title: 'Pick from Gallery',
                           icon: Icons.image_outlined,
                           onClick: () => getImage(ImageSource.gallery),
                           context: context),
+                      const SizedBox(width: 5,),
                       customButton(
                           title: 'Pick from Camera',
                           icon: Icons.camera,
@@ -351,7 +368,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       tts.speak(controllerAlert.text);
                     }
                   },
-                  style: ButtonStyle(
+                  style:
+                  ButtonStyle(
                     shadowColor: MaterialStateProperty.all(
                         const Color.fromARGB(255, 235, 186, 141)),
                     backgroundColor: MaterialStateProperty.all(
@@ -364,6 +382,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Ask Me!',
                       style: TextStyle(color: Colors.white)),
                 ),
+
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 Expanded(
                   child: SingleChildScrollView(
