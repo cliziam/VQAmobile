@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'DescribePhoto.dart';
+import 'CropImage.dart';
 import 'api/speech_api.dart';
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
@@ -275,7 +275,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const DescribePhoto()),
+                  MaterialPageRoute(builder: (context) => const CropImage()),
                 );
                 },
 

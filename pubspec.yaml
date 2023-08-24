@@ -44,6 +44,8 @@ dependencies:
   porcupine_flutter: ^2.2.1
   speech_to_text: ^6.3.0
   audioplayers: ^5.1.0
+  image_cropper: ^4.0.1
+  dotted_border: ^2.0.0+3
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +82,7 @@ flutter:
       - .env
       - assets/images/logo.png
       - assets/audio/letsgo.mp3
+      - assets/images/panorama.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

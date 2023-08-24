@@ -153,6 +153,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  dotted_border:
+    dependency: "direct main"
+    description:
+      name: dotted_border
+      sha256: "07a5c5e8d4e6e992279e190e0352be8faa5b8f96d81c77a78b2d42f060279840"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0+3"
   fake_async:
     dependency: transitive
     description:
@@ -304,6 +312,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.17"
+  image_cropper:
+    dependency: "direct main"
+    description:
+      name: image_cropper
+      sha256: "542c3453109d16bcc388e43ae2276044d2cd6a6d20c68bdcff2c94ab9363ea15"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
+  image_cropper_for_web:
+    dependency: transitive
+    description:
+      name: image_cropper_for_web
+      sha256: "89c936aa772a35b69ca67b78049ae9fa163a4fb8da2f6dee3893db8883fb49d2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
+  image_cropper_platform_interface:
+    dependency: transitive
+    description:
+      name: image_cropper_platform_interface
+      sha256: b232175c132b2f7ede3e1f101652bcd635cb4079a77c6dded8e6d32e6578d685
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   image_picker:
     dependency: "direct main"
     description:
@@ -332,10 +364,10 @@ packages:
     dependency: transitive
     description:
       name: image_picker_ios
-      sha256: b3e2f21feb28b24dd73a35d7ad6e83f568337c70afab5eabac876e23803f264b
+      sha256: bee3b7c7e6266a37fb1bfdc275bc60427029d447205d44933aac130fbb9d3330
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.8"
+    version: "0.8.8+1"
   image_picker_linux:
     dependency: transitive
     description:
@@ -432,6 +464,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  path_drawing:
+    dependency: transitive
+    description:
+      name: path_drawing
+      sha256: bbb1934c0cbb03091af082a6389ca2080345291ef07a5fa6d6e078ba8682f977
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  path_parsing:
+    dependency: transitive
+    description:
+      name: path_parsing
+      sha256: e3e67b1629e6f7e8100b367d3db6ba6af4b1f0bb80f64db18ef1fbabd2fa9ccf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   path_provider:
     dependency: "direct main"
     description:
@@ -657,10 +705,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: f2add6fa510d3ae152903412227bda57d0d5a8da61d2c39c1fb022c9429a41c0
+      sha256: "9e82a402b7f3d518fb9c02d0e9ae45952df31b9bf34d77baf19da2de03fc2aaa"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.6"
+    version: "5.0.7"
   xdg_directories:
     dependency: transitive
     description:
