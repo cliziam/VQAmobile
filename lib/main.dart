@@ -14,6 +14,8 @@ import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart';
+import 'globals.dart' as globals;
+
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -52,10 +54,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  File? _image;
   bool isListening = false;
   bool isLoading = false;
-  bool isFilledImage = false;
   bool isFilledQuestion = false;
 
   // use this controller to get what the user typed
@@ -75,8 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // ignore: non_constant_identifier_names
   Home() {
-    tts.setLanguage('en');
-    tts.setSpeechRate(0.1);
+      txt();
   }
 
   @override
@@ -95,6 +94,13 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.setPitch(1);
     await fluttertts.speak(text);
   }
+  
+  void txt() async {
+    await tts.setLanguage("en-US");
+    await tts.setVolume(10);
+    await tts.setSpeechRate(0.5);
+    await tts.setPitch(1);
+  }
 
   Future getImage(ImageSource source) async {
     try {
@@ -102,17 +108,17 @@ class _MyHomePageState extends State<MyHomePage> {
       if (image == null) return;
       //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
-
+      globals.pathImage=imagePermanent;
       setState(() {
-        _image = imagePermanent;
-        isFilledImage = true; //imageTemporary;
+        globals.pathImage = imagePermanent;
+        globals.isFilledImage = true; //imageTemporary;
       });
     } on PlatformException catch (e) {
       // ignore: avoid_print
       print("Failed to pick image: $e");
     }
   }
-
+ 
   Future<File> saveFilePermanently(String imagePath) async {
     final directory = await getApplicationDocumentsDirectory();
     final name = basename(imagePath);
@@ -145,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print('PORCUPINE word detected');
       //toggleRecording();
-      getImage(ImageSource.camera);
+      toggleRecording();
     }
   }
 
@@ -153,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //ByteData bytes = await rootBundle.load('assets/images/cat.jpg');
     //var buffer = bytes.buffer;
     //var encodedImg = base64.encode(Uint8List.view(buffer));
-    List<int> fileInByte = _image!.readAsBytesSync();
+    List<int> fileInByte = globals.pathImage!.readAsBytesSync();
     String fileInBase64 = base64Encode(fileInByte);
     try {
       // ignore: unused_local_variable
@@ -289,9 +295,8 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 const SizedBox(height: 10),
-                _image != null
-                    ? Image.file(_image!,
-                        width: 250, height: 250, fit: BoxFit.cover)
+                globals.isFilledImage
+                    ? Image.file(globals.pathImage!, width: 250, height: 250, fit: BoxFit.contain)
                     : Image.asset("assets/images/logo.png",
                         width: 250, height: 250),
                 const SizedBox(height: 10),
@@ -356,7 +361,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
                     //print(askMeButtonState);
                     //print(isFilledQuestion);
-                    if (isFilledImage && isFilledQuestion) {
+                    if (globals.isFilledImage && isFilledQuestion) {
                       tts.speak(controllerLoading.text);
                       setState(() {
                         isLoading = true;
@@ -430,4 +435,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ));
   }
+
+  Image newMethod() {
+    return Image.file(globals.pathImage!, width: 250, height: 250, fit: BoxFit.cover);
+  }
+   
+  
 }
