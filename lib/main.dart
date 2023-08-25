@@ -66,17 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late PorcupineManager _porcupineManager;
   String accessKey = dotenv.env['ACCESSKEY']!;
   final FlutterTts tts = FlutterTts();
-  final TextEditingController controllerLoading =
-      TextEditingController(text: 'I am thinking...');
-
-  final TextEditingController controllerAlert = TextEditingController(
-      text: 'You have to upload an image and a question '
-          'in order to proceed. Please check.');
-
-  // ignore: non_constant_identifier_names
-  Home() {
-      txt();
-  }
 
   @override
   void initState() {
@@ -94,13 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.setPitch(1);
     await fluttertts.speak(text);
   }
-  
-  void txt() async {
-    await tts.setLanguage("en-US");
-    await tts.setVolume(10);
-    await tts.setSpeechRate(0.5);
-    await tts.setPitch(1);
-  }
+
 
   Future getImage(ImageSource source) async {
     try {
@@ -362,15 +345,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     //print(askMeButtonState);
                     //print(isFilledQuestion);
                     if (globals.isFilledImage && isFilledQuestion) {
-                      tts.speak(controllerLoading.text);
+                      textToSpeech('I am thinking...');
                       setState(() {
                         isLoading = true;
                       });
                       answer = await getAnswer(_textController.text);
                       displayAnswer(answer);
                     } else {
-                      showAlertDialog(context);
-                      tts.speak(controllerAlert.text);
+                     showAlertDialog(context);
+                     textToSpeech('You have to upload an image and a question in order to proceed. Please check.');
                     }
                   },
                   style:
