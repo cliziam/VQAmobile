@@ -16,7 +16,6 @@ import 'package:porcupine_flutter/porcupine_error.dart';
 import 'package:path/path.dart';
 import 'globals.dart' as globals;
 
-
 void main() async {
   await dotenv.load(fileName: ".env");
   Replicate.apiKey = dotenv.env['API_KEY']!;
@@ -84,14 +83,13 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.speak(text);
   }
 
-
   Future getImage(ImageSource source) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
       if (image == null) return;
       //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
-      globals.pathImage=imagePermanent;
+      globals.pathImage = imagePermanent;
       setState(() {
         globals.pathImage = imagePermanent;
         globals.isFilledImage = true; //imageTemporary;
@@ -101,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("Failed to pick image: $e");
     }
   }
- 
+
   Future<File> saveFilePermanently(String imagePath) async {
     final directory = await getApplicationDocumentsDirectory();
     final name = basename(imagePath);
@@ -134,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print('PORCUPINE word detected');
       //toggleRecording();
-      toggleRecording();
+      getImage(ImageSource.camera);
     }
   }
 
@@ -191,20 +189,19 @@ class _MyHomePageState extends State<MyHomePage> {
     required context,
   }) {
     return Expanded(
-      child:
-          ElevatedButton(
-              onPressed: onClick,
-              child: Row(
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 10),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              )),
+      child: ElevatedButton(
+          onPressed: onClick,
+          child: Row(
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 10),
+              ),
+            ],
+          )),
     );
   }
 
@@ -266,8 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   MaterialPageRoute(builder: (context) => const CropImage()),
                 );
-                },
-
+              },
             )
           ],
         ),
@@ -279,25 +275,26 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 const SizedBox(height: 10),
                 globals.isFilledImage
-                    ? Image.file(globals.pathImage!, width: 250, height: 250, fit: BoxFit.contain)
+                    ? Image.file(globals.pathImage!,
+                        width: 250, height: 250, fit: BoxFit.contain)
                     : Image.asset("assets/images/logo.png",
                         width: 250, height: 250),
                 const SizedBox(height: 10),
-                Row(
-
-                    children: <Widget>[
-                      customButton(
-                          title: 'Pick from Gallery',
-                          icon: Icons.image_outlined,
-                          onClick: () => getImage(ImageSource.gallery),
-                          context: context),
-                      const SizedBox(width: 5,),
-                      customButton(
-                          title: 'Pick from Camera',
-                          icon: Icons.camera,
-                          onClick: () => getImage(ImageSource.camera),
-                          context: context),
-                    ]),
+                Row(children: <Widget>[
+                  customButton(
+                      title: 'Pick from Gallery',
+                      icon: Icons.image_outlined,
+                      onClick: () => getImage(ImageSource.gallery),
+                      context: context),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  customButton(
+                      title: 'Pick from Camera',
+                      icon: Icons.camera,
+                      onClick: () => getImage(ImageSource.camera),
+                      context: context),
+                ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
                   controller: _textController,
@@ -352,12 +349,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       answer = await getAnswer(_textController.text);
                       displayAnswer(answer);
                     } else {
-                     showAlertDialog(context);
-                     textToSpeech('You have to upload an image and a question in order to proceed. Please check.');
+                      showAlertDialog(context);
+                      textToSpeech(
+                          'You have to upload an image and a question in order to proceed. Please check.');
                     }
                   },
-                  style:
-                  ButtonStyle(
+                  style: ButtonStyle(
                     shadowColor: MaterialStateProperty.all(
                         const Color.fromARGB(255, 235, 186, 141)),
                     backgroundColor: MaterialStateProperty.all(
@@ -370,7 +367,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Ask Me!',
                       style: TextStyle(color: Colors.white)),
                 ),
-
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 Expanded(
                   child: SingleChildScrollView(
@@ -420,8 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Image newMethod() {
-    return Image.file(globals.pathImage!, width: 250, height: 250, fit: BoxFit.cover);
+    return Image.file(globals.pathImage!,
+        width: 250, height: 250, fit: BoxFit.cover);
   }
-   
-  
 }
