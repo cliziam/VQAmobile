@@ -85,10 +85,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.speak(text);
   }
 
-  Future getImage(ImageSource source, bool calledByWakeWord) async {
+  Future getImage(ImageSource source) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
-      if (calledByWakeWord) _porcupineManager.start();
+      //if (calledByWakeWord) _porcupineManager.start();
       if (image == null) return;
       //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
@@ -114,7 +114,11 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
-        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        [
+          BuiltInKeyword.PICOVOICE,
+          BuiltInKeyword.PORCUPINE,
+          BuiltInKeyword.BLUEBERRY
+        ],
         _wakeWordCallBack,
       );
       _porcupineManager.start();
@@ -125,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _wakeWordCallBack(int keywordIndex) async {
-    _porcupineManager.stop();
+    if (keywordIndex < 1) _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
       print('PICOVOICE word detected');
@@ -135,7 +139,11 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print('PORCUPINE word detected');
       //toggleRecording();
-      getImage(ImageSource.camera, true);
+      getImage(ImageSource.camera);
+    } else if (keywordIndex == 2) {
+      // ignore: avoid_print
+      print("BLUEBERRY word detected");
+      onButtonPress();
     }
   }
 
@@ -241,6 +249,28 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<dynamic> onButtonPress() async {
+    final text = _textController.value.text;
+    setState(() {
+      isFilledQuestion = text.isNotEmpty;
+      //askMeButtonState = true;
+    });
+    //print(askMeButtonState);
+    //print(isFilledQuestion);
+    if (globals.isFilledImage && isFilledQuestion && !_isShort && !_isEmpty) {
+      textToSpeech('I am thinking...');
+      setState(() {
+        isLoading = true; //true
+      });
+      answer = await getAnswer(_textController.text);
+      displayAnswer(answer);
+    } else {
+      showAlertDialog(this.context);
+      textToSpeech(
+          'You have to upload an image and a question in order to proceed. Please check.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -281,7 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Gallery',
                       icon: Icons.image_outlined,
-                      onClick: () => getImage(ImageSource.gallery, false),
+                      onClick: () => getImage(ImageSource.gallery),
                       context: context),
                   const SizedBox(
                     width: 5,
@@ -289,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Camera',
                       icon: Icons.camera,
-                      onClick: () => getImage(ImageSource.camera, false),
+                      onClick: () => getImage(ImageSource.camera),
                       context: context),
                 ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
@@ -334,7 +364,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         IconButton(
-                          onPressed: () => _textController.clear(),
+                          onPressed: () => {
+                            _textController.clear(),
+                          },
                           icon: const Icon(Icons.clear),
                         ),
                       ],
@@ -343,30 +375,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
-                  onPressed: () async {
-                    final text = _textController.value.text;
-                    setState(() {
-                      isFilledQuestion = text.isNotEmpty;
-                      //askMeButtonState = true;
-                    });
-                    //print(askMeButtonState);
-                    //print(isFilledQuestion);
-                    if (globals.isFilledImage &&
-                        isFilledQuestion &&
-                        !_isShort &&
-                        !_isEmpty) {
-                      textToSpeech('I am thinking...');
-                      setState(() {
-                        isLoading = true;
-                      });
-                      answer = await getAnswer(_textController.text);
-                      displayAnswer(answer);
-                    } else {
-                      showAlertDialog(context);
-                      textToSpeech(
-                          'You have to upload an image and a question in order to proceed. Please check.');
-                    }
-                  },
+                  onPressed: () => onButtonPress(),
                   style: ButtonStyle(
                     shadowColor: MaterialStateProperty.all(
                         const Color.fromARGB(255, 235, 186, 141)),
