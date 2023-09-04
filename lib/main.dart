@@ -83,16 +83,17 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.speak(text);
   }
 
-  Future getImage(ImageSource source) async {
+  Future getImage(ImageSource source, bool calledByWakeWord) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
+      if (calledByWakeWord) _porcupineManager.start();
       if (image == null) return;
       //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
       globals.pathImage = imagePermanent;
       setState(() {
-        globals.pathImage = imagePermanent;
-        globals.isFilledImage = true; //imageTemporary;
+        globals.pathImage = imagePermanent; //imageTemporary
+        globals.isFilledImage = true;
       });
     } on PlatformException catch (e) {
       // ignore: avoid_print
@@ -132,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print('PORCUPINE word detected');
       //toggleRecording();
-      getImage(ImageSource.camera);
+      getImage(ImageSource.camera, true);
     }
   }
 
@@ -284,7 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Gallery',
                       icon: Icons.image_outlined,
-                      onClick: () => getImage(ImageSource.gallery),
+                      onClick: () => getImage(ImageSource.gallery, false),
                       context: context),
                   const SizedBox(
                     width: 5,
@@ -292,7 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Camera',
                       icon: Icons.camera,
-                      onClick: () => getImage(ImageSource.camera),
+                      onClick: () => getImage(ImageSource.camera, false),
                       context: context),
                 ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
