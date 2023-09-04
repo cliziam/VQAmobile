@@ -56,6 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isListening = false;
   bool isLoading = false;
   bool isFilledQuestion = false;
+  bool _isEmpty = false;
+  bool _isShort = false;
 
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
@@ -206,22 +208,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  bool askMeButtonState = false;
-  String? get _errorText {
-    final text = _textController.value.text;
-    if (askMeButtonState == true) {
-      if (text.isEmpty) {
-        return 'Can\'t be empty';
-      } else {
-        isFilledQuestion = true;
-      }
-      if (text.length < 4) {
-        return 'Too short';
-      }
-    }
-    return null;
-  }
-
   void showAlertDialog(BuildContext context) {
     Widget okButton = TextButton(
       child: const Text("Ok"),
@@ -243,6 +229,16 @@ class _MyHomePageState extends State<MyHomePage> {
         return alert;
       },
     );
+  }
+
+  void setBooleans(bool isShort) {
+    if (isShort) {
+      _isShort = true;
+      _isEmpty = false;
+    } else {
+      _isShort = false;
+      _isEmpty = false;
+    }
   }
 
   @override
@@ -298,13 +294,26 @@ class _MyHomePageState extends State<MyHomePage> {
                 ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
+                  onChanged: (text) {
+                    setState(() {
+                      _textController.text.isEmpty
+                          ? _isEmpty = true
+                          : _textController.text.length < 4
+                              ? setBooleans(true)
+                              : setBooleans(false);
+                    });
+                  },
                   controller: _textController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     hintText: 'Enter a question...',
-                    errorText: _errorText,
+                    errorText: _isEmpty
+                        ? 'Question can\'t be empty'
+                        : _isShort
+                            ? 'Question too short'
+                            : null,
                     suffixIcon: Row(
                       mainAxisAlignment:
                           MainAxisAlignment.spaceBetween, // added line
@@ -338,11 +347,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     final text = _textController.value.text;
                     setState(() {
                       isFilledQuestion = text.isNotEmpty;
-                      askMeButtonState = true;
+                      //askMeButtonState = true;
                     });
                     //print(askMeButtonState);
                     //print(isFilledQuestion);
-                    if (globals.isFilledImage && isFilledQuestion) {
+                    if (globals.isFilledImage &&
+                        isFilledQuestion &&
+                        !_isShort &&
+                        !_isEmpty) {
                       textToSpeech('I am thinking...');
                       setState(() {
                         isLoading = true;
