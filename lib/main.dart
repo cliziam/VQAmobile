@@ -253,10 +253,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final text = _textController.value.text;
     setState(() {
       isFilledQuestion = text.isNotEmpty;
-      //askMeButtonState = true;
     });
-    //print(askMeButtonState);
-    //print(isFilledQuestion);
     if (globals.isFilledImage && isFilledQuestion && !_isShort && !_isEmpty) {
       textToSpeech('I am thinking...');
       setState(() {
@@ -394,7 +391,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: SizedBox(
-                      height: 220,
+                      height: 200,
                       child: Card(
                         color: Colors.white,
                         elevation: 3,
@@ -418,14 +415,24 @@ class _MyHomePageState extends State<MyHomePage> {
                               ]),
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
-                          Padding(
-                            padding: const EdgeInsets.all(
-                                15), //apply padding to all four sides
-                            child: !isLoading
-                                ? Text(displayedAnswer,
-                                    style: const TextStyle(fontSize: 15))
-                                : const CircularProgressIndicator(),
-                          ),
+                          Expanded(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: !isLoading
+                                    ? SingleChildScrollView(
+                                        scrollDirection: Axis.vertical,
+                                        child: Text(displayedAnswer,
+                                            style:
+                                                const TextStyle(fontSize: 15)),
+                                      )
+                                    : const SizedBox(
+                                        width: 40,
+                                        height: 10,
+                                        child: Center(
+                                            child: CircularProgressIndicator()),
+                                      ),
+                              )),
                         ]),
                       ),
                     ),
