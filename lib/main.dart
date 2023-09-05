@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isFilledQuestion = false;
   bool _isEmpty = false;
   bool _isShort = false;
+  bool _isSwitched = false;
 
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
@@ -85,10 +86,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.speak(text);
   }
 
-  Future getImage(ImageSource source) async {
+  Future getImage(ImageSource source, bool calledByWakeWord) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
-      //if (calledByWakeWord) _porcupineManager.start();
+      if (calledByWakeWord) _porcupineManager.start();
       if (image == null) return;
       //final imageTemporary = File(image.path); // if we do not want to save the image on the device
       final imagePermanent = await saveFilePermanently(image.path);
@@ -129,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _wakeWordCallBack(int keywordIndex) async {
-    if (keywordIndex < 1) _porcupineManager.stop();
+    if (keywordIndex <= 1) _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
       print('PICOVOICE word detected');
@@ -139,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print('PORCUPINE word detected');
       //toggleRecording();
-      getImage(ImageSource.camera);
+      getImage(ImageSource.camera, true);
     } else if (keywordIndex == 2) {
       // ignore: avoid_print
       print("BLUEBERRY word detected");
@@ -308,7 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Gallery',
                       icon: Icons.image_outlined,
-                      onClick: () => getImage(ImageSource.gallery),
+                      onClick: () => getImage(ImageSource.gallery, false),
                       context: context),
                   const SizedBox(
                     width: 5,
@@ -316,7 +317,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   customButton(
                       title: 'Pick from Camera',
                       icon: Icons.camera,
-                      onClick: () => getImage(ImageSource.camera),
+                      onClick: () => getImage(ImageSource.camera, false),
                       context: context),
                 ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
@@ -400,19 +401,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                           Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                const SizedBox(width: 10),
-                                const Text('Answer',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                IconButton(
-                                    onPressed: () async => {
-                                          textToSpeech(answer),
-                                        },
-                                    icon: const Icon(Icons.volume_up))
-                              ]),
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              const Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
+                              const SizedBox(width: 10),
+                              const Text('Answer',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              IconButton(
+                                  onPressed: () async => {
+                                        textToSpeech(answer),
+                                      },
+                                  icon: const Icon(Icons.volume_up)),
+                              Switch(
+                                  value: _isSwitched,
+                                  onChanged: (value) =>
+                                      setState(() => _isSwitched = value))
+                            ],
+                          ),
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
                           Expanded(
