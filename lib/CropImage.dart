@@ -1,4 +1,5 @@
-// ignore: file_names
+// ignore_for_file: file_names
+
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
@@ -16,14 +17,14 @@ class CropImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const CropImagePage(title: 'Image Cropper Demo');
-
   }
 }
 
 class CropImagePage extends StatefulWidget {
   final String title;
 
-  const CropImagePage({super.key, 
+  const CropImagePage({
+    super.key,
     required this.title,
   });
 
@@ -40,10 +41,11 @@ class _CropImagePageState extends State<CropImagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Touchable photograph',
-          style: TextStyle(color: Colors.black),),
+        title: const Text(
+          'Touchable photograph',
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: const Color.fromARGB(255, 217, 229, 222),
-
       ),
       body: Column(
         mainAxisSize: MainAxisSize.max,
@@ -61,9 +63,7 @@ class _CropImagePageState extends State<CropImagePage> {
               ),
             ),
           Expanded(child: _body()),
-
         ],
-
       ),
     );
   }
@@ -84,7 +84,7 @@ class _CropImagePageState extends State<CropImagePage> {
         children: [
           Padding(
             padding:
-            const EdgeInsets.symmetric(horizontal: kIsWeb ? 24.0 : 16.0),
+                const EdgeInsets.symmetric(horizontal: kIsWeb ? 24.0 : 16.0),
             child: Card(
               elevation: 4.0,
               child: Padding(
@@ -93,7 +93,6 @@ class _CropImagePageState extends State<CropImagePage> {
               ),
             ),
           ),
-
           _menu(),
         ],
       ),
@@ -130,23 +129,22 @@ class _CropImagePageState extends State<CropImagePage> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-
-      FloatingActionButton(
+        FloatingActionButton(
           mini: true,
           onPressed: () {
             _check();
           },
-          backgroundColor: const Color.fromARGB(255, 253,235,222),
+          backgroundColor: const Color.fromARGB(255, 253, 235, 222),
           tooltip: 'Check',
           child: const Icon(Icons.check),
         ),
-       FloatingActionButton(
+        FloatingActionButton(
           heroTag: null,
           mini: true,
           onPressed: () {
             _clear();
           },
-          backgroundColor: const Color.fromARGB(255, 253,235,222),
+          backgroundColor: const Color.fromARGB(255, 253, 235, 222),
           tooltip: 'Delete',
           child: const Icon(Icons.delete),
         ),
@@ -158,7 +156,7 @@ class _CropImagePageState extends State<CropImagePage> {
               onPressed: () {
                 _cropImage();
               },
-              backgroundColor:  const Color.fromARGB(255, 235, 186, 141),
+              backgroundColor: const Color.fromARGB(255, 235, 186, 141),
               tooltip: 'Crop',
               child: const Icon(Icons.crop),
             ),
@@ -205,16 +203,16 @@ class _CropImagePageState extends State<CropImagePage> {
                             'Upload an image to start',
                             style: kIsWeb
                                 ? Theme.of(context)
-                                .textTheme
-                                .headlineSmall!
-                                .copyWith(
-                                color: Theme.of(context).highlightColor)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                        color: Theme.of(context).highlightColor)
                                 : Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                color:
-                                Theme.of(context).highlightColor),
+                                    .textTheme
+                                    .bodyMedium!
+                                    .copyWith(
+                                        color:
+                                            Theme.of(context).highlightColor),
                           )
                         ],
                       ),
@@ -247,7 +245,7 @@ class _CropImagePageState extends State<CropImagePage> {
         uiSettings: [
           AndroidUiSettings(
               toolbarTitle: 'Cropper',
-              toolbarColor:  const Color.fromARGB(255, 217, 229, 222),
+              toolbarColor: const Color.fromARGB(255, 217, 229, 222),
               toolbarWidgetColor: Colors.black,
               initAspectRatio: CropAspectRatioPreset.original,
               lockAspectRatio: false),
@@ -262,7 +260,7 @@ class _CropImagePageState extends State<CropImagePage> {
               height: 520,
             ),
             viewPort:
-            const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+                const CroppieViewPort(width: 480, height: 480, type: 'circle'),
             enableExif: true,
             enableZoom: true,
             showZoomer: true,
@@ -272,8 +270,8 @@ class _CropImagePageState extends State<CropImagePage> {
       if (croppedFile != null) {
         setState(() {
           _croppedFile = croppedFile;
-          globals.pathImage=File(_croppedFile!.path);
-          globals.isFilledImage=true;
+          globals.pathImage = File(_croppedFile!.path);
+          globals.isFilledImage = true;
         });
       }
     }
@@ -283,9 +281,10 @@ class _CropImagePageState extends State<CropImagePage> {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
-      final imageTemporary = File(image.path); // if we do not want to save the image on the device
-      globals.pathImage=imageTemporary;
-      globals.isFilledImage=true;
+      final imageTemporary =
+          File(image.path); // if we do not want to save the image on the device
+      globals.pathImage = imageTemporary;
+      globals.isFilledImage = true;
 
       setState(() {
         _pickedFile = imageTemporary;
@@ -295,8 +294,6 @@ class _CropImagePageState extends State<CropImagePage> {
       print("Failed to pick image: $e");
     }
   }
-  
- 
 
   void _clear() {
     setState(() {
@@ -304,12 +301,16 @@ class _CropImagePageState extends State<CropImagePage> {
       _croppedFile = null;
     });
   }
-  
+
   void _check() {
     setState(() {
       Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyHomePage(title: '',)),
-                );    });
+        context,
+        MaterialPageRoute(
+            builder: (context) => const MyHomePage(
+                  title: '',
+                )),
+      );
+    });
   }
 }
