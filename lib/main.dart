@@ -267,6 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
       textToSpeech(
           'You have to upload an image and a question in order to proceed. Please check.');
     }
+    if (_isSwitched) textToSpeech(answer);
   }
 
   @override
@@ -401,10 +402,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              const Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0)),
                               const SizedBox(width: 10),
                               const Text('Answer',
                                   style: TextStyle(
