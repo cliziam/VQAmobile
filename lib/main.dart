@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:porcupine_flutter/porcupine.dart';
 import 'package:replicate/replicate.dart';
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
             background: Colors.white),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'VQAsk Application'),
+      home: const MyHomePage(title: 'VQAsk'),
     );
   }
 }
@@ -56,6 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isListening = false;
   bool isLoading = false;
   bool isFilledQuestion = false;
+  bool _isEmpty = false;
+  bool _isShort = false;
+  bool _isSwitched = true;
 
   // use this controller to get what the user typed
   final TextEditingController _textController = TextEditingController();
@@ -77,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void textToSpeech(String text) async {
     await fluttertts.setLanguage("en-US");
-    await fluttertts.setVolume(10);
+    await fluttertts.setVolume(1);
     await fluttertts.setSpeechRate(0.5);
     await fluttertts.setPitch(1);
     await fluttertts.speak(text);
@@ -85,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future getImage(ImageSource source, bool calledByWakeWord) async {
     try {
+      Vibrate.feedback(FeedbackType.success);
       final image = await ImagePicker().pickImage(source: source);
       if (calledByWakeWord) _porcupineManager.start();
       if (image == null) return;
@@ -112,7 +117,11 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
-        [BuiltInKeyword.PICOVOICE, BuiltInKeyword.PORCUPINE],
+        [
+          BuiltInKeyword.PICOVOICE,
+          BuiltInKeyword.PORCUPINE,
+          BuiltInKeyword.BLUEBERRY
+        ],
         _wakeWordCallBack,
       );
       _porcupineManager.start();
@@ -123,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _wakeWordCallBack(int keywordIndex) async {
-    _porcupineManager.stop();
+    if (keywordIndex <= 1) _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
       print('PICOVOICE word detected');
@@ -134,6 +143,10 @@ class _MyHomePageState extends State<MyHomePage> {
       print('PORCUPINE word detected');
       //toggleRecording();
       getImage(ImageSource.camera, true);
+    } else if (keywordIndex == 2) {
+      // ignore: avoid_print
+      print("BLUEBERRY word detected");
+      onButtonPress();
     }
   }
 
@@ -206,22 +219,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  bool askMeButtonState = false;
-  String? get _errorText {
-    final text = _textController.value.text;
-    if (askMeButtonState == true) {
-      if (text.isEmpty) {
-        return 'Can\'t be empty';
-      } else {
-        isFilledQuestion = true;
-      }
-      if (text.length < 4) {
-        return 'Too short';
-      }
-    }
-    return null;
-  }
-
   void showAlertDialog(BuildContext context) {
     Widget okButton = TextButton(
       child: const Text("Ok"),
@@ -245,11 +242,44 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void setBooleans(bool isShort) {
+    if (isShort) {
+      _isShort = true;
+      _isEmpty = false;
+    } else {
+      _isShort = false;
+      _isEmpty = false;
+    }
+  }
+
+  Future<dynamic> onButtonPress() async {
+    final text = _textController.value.text;
+    setState(() {
+      isFilledQuestion = text.isNotEmpty;
+    });
+    FocusManager.instance.primaryFocus?.unfocus(); // hide keyboard
+    if (globals.isFilledImage && isFilledQuestion && !_isShort && !_isEmpty) {
+      if (_isSwitched) textToSpeech('I am thinking...');
+      setState(() {
+        isLoading = true; //true
+      });
+      answer = await getAnswer(_textController.text);
+      displayAnswer(answer);
+      if (_isSwitched) textToSpeech(answer);
+    } else {
+      showAlertDialog(this.context);
+      Vibrate.feedback(FeedbackType.error);
+      // textToSpeech(
+      //     'You have to upload an image and a question in order to proceed. Please check.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
+          centerTitle: true,
           backgroundColor: const Color.fromARGB(255, 217, 229, 222),
           title: Text(widget.title),
           actions: <Widget>[
@@ -298,13 +328,26 @@ class _MyHomePageState extends State<MyHomePage> {
                 ]),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 40, 0, 0)),
                 TextField(
+                  onChanged: (text) {
+                    setState(() {
+                      _textController.text.isEmpty
+                          ? _isEmpty = true
+                          : _textController.text.length < 4
+                              ? setBooleans(true)
+                              : setBooleans(false);
+                    });
+                  },
                   controller: _textController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     hintText: 'Enter a question...',
-                    errorText: _errorText,
+                    errorText: _isEmpty
+                        ? 'Question can\'t be empty'
+                        : _isShort
+                            ? 'Question too short'
+                            : null,
                     suffixIcon: Row(
                       mainAxisAlignment:
                           MainAxisAlignment.spaceBetween, // added line
@@ -325,7 +368,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         IconButton(
-                          onPressed: () => _textController.clear(),
+                          onPressed: () => {
+                            _textController.clear(),
+                          },
                           icon: const Icon(Icons.clear),
                         ),
                       ],
@@ -334,27 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                 ElevatedButton(
-                  onPressed: () async {
-                    final text = _textController.value.text;
-                    setState(() {
-                      isFilledQuestion = text.isNotEmpty;
-                      askMeButtonState = true;
-                    });
-                    //print(askMeButtonState);
-                    //print(isFilledQuestion);
-                    if (globals.isFilledImage && isFilledQuestion) {
-                      textToSpeech('I am thinking...');
-                      setState(() {
-                        isLoading = true;
-                      });
-                      answer = await getAnswer(_textController.text);
-                      displayAnswer(answer);
-                    } else {
-                      showAlertDialog(context);
-                      textToSpeech(
-                          'You have to upload an image and a question in order to proceed. Please check.');
-                    }
-                  },
+                  onPressed: () => onButtonPress(),
                   style: ButtonStyle(
                     shadowColor: MaterialStateProperty.all(
                         const Color.fromARGB(255, 235, 186, 141)),
@@ -365,7 +390,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     minimumSize: MaterialStateProperty.all(const Size(150, 50)),
                   ),
-                  child: const Text('Ask Me!',
+                  child: const Text('Ask me!',
                       style: TextStyle(color: Colors.white)),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
@@ -373,7 +398,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: SizedBox(
-                      height: 220,
+                      height: 200,
                       child: Card(
                         color: Colors.white,
                         elevation: 3,
@@ -382,29 +407,51 @@ class _MyHomePageState extends State<MyHomePage> {
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 20, 0, 0)),
                           Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                const SizedBox(width: 10),
-                                const Text('Answer',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                IconButton(
-                                    onPressed: () async => {
-                                          textToSpeech(answer),
-                                        },
-                                    icon: const Icon(Icons.volume_up))
-                              ]),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              const SizedBox(width: 10),
+                              const Text('Answer',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              IconButton(
+                                  onPressed: () async => {
+                                        textToSpeech(answer),
+                                      },
+                                  icon: const Icon(Icons.volume_up)),
+                              SizedBox(
+                                width: 45,
+                                height: 35,
+                                child: FittedBox(
+                                  fit: BoxFit.fill,
+                                  child: Switch(
+                                      value: _isSwitched,
+                                      onChanged: (value) =>
+                                          setState(() => _isSwitched = value)),
+                                ),
+                              ),
+                            ],
+                          ),
                           const Padding(
                               padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
-                          Padding(
-                            padding: const EdgeInsets.all(
-                                15), //apply padding to all four sides
-                            child: !isLoading
-                                ? Text(displayedAnswer,
-                                    style: const TextStyle(fontSize: 15))
-                                : const CircularProgressIndicator(),
-                          ),
+                          Expanded(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: !isLoading
+                                    ? SingleChildScrollView(
+                                        scrollDirection: Axis.vertical,
+                                        child: Text(displayedAnswer,
+                                            style:
+                                                const TextStyle(fontSize: 15)),
+                                      )
+                                    : const SizedBox(
+                                        width: 40,
+                                        height: 10,
+                                        child: Center(
+                                            child: CircularProgressIndicator()),
+                                      ),
+                              )),
                         ]),
                       ),
                     ),
