@@ -6,6 +6,7 @@ import 'package:replicate/replicate.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -88,21 +89,59 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future getImage(ImageSource source, bool calledByWakeWord) async {
-    try {
+    if (calledByWakeWord) {
+      late CameraController _controller;
+      late Future<void> _initializeControllerFuture;
+
       Vibrate.feedback(FeedbackType.success);
-      final image = await ImagePicker().pickImage(source: source);
-      if (calledByWakeWord) _porcupineManager.start();
-      if (image == null) return;
-      //final imageTemporary = File(image.path); // if we do not want to save the image on the device
-      final imagePermanent = await saveFilePermanently(image.path);
-      globals.pathImage = imagePermanent;
-      setState(() {
-        globals.pathImage = imagePermanent; //imageTemporary
-        globals.isFilledImage = true;
-      });
-    } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print("Failed to pick image: $e");
+      // init camera
+      final cameras = await availableCameras();
+      if (cameras.isNotEmpty) {
+        _controller = CameraController(cameras[0], ResolutionPreset.max,
+            imageFormatGroup: ImageFormatGroup.jpeg);
+        _initializeControllerFuture = _controller.initialize();
+      }
+      if (!mounted) {
+        print("NOT MOUNTED!!");
+        return;
+      }
+      setState(() {});
+
+      // shoot photo and save image
+      try {
+        await _initializeControllerFuture;
+        final XFile image = await _controller.takePicture();
+        final imagePermanent = await saveFilePermanently(image.path);
+        globals.pathImage = imagePermanent;
+        setState(() {
+          globals.pathImage = imagePermanent; //imageTemporary
+          globals.isFilledImage = true;
+        });
+      } catch (e) {
+        print(e);
+      }
+
+      //dismiss camera and restart porcupine
+      _controller.dispose();
+      _porcupineManager.start();
+      Vibrate.feedback(FeedbackType.success);
+    } else {
+      try {
+        Vibrate.feedback(FeedbackType.success);
+        final image = await ImagePicker().pickImage(source: source);
+        if (image == null) return;
+        //final imageTemporary = File(image.path); // if we do not want to save the image on the device
+        final imagePermanent = await saveFilePermanently(image.path);
+        globals.pathImage = imagePermanent;
+        setState(() {
+          globals.pathImage = imagePermanent; //imageTemporary
+          globals.isFilledImage = true;
+        });
+        Vibrate.feedback(FeedbackType.success);
+      } on PlatformException catch (e) {
+        // ignore: avoid_print
+        print("Failed to pick image: $e");
+      }
     }
   }
 
@@ -141,7 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (keywordIndex == 1) {
       // ignore: avoid_print
       print('PORCUPINE word detected');
-      //toggleRecording();
       getImage(ImageSource.camera, true);
     } else if (keywordIndex == 2) {
       // ignore: avoid_print
@@ -170,9 +208,16 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print("Failed to create the prediction: $e");
     }
+
     await Future.delayed(const Duration(seconds: 7));
-    PaginatedPredictions predictionsPageList =
-        await Replicate.instance.predictions.list();
+
+    PaginatedPredictions predictionsPageList;
+    try {
+      predictionsPageList = await Replicate.instance.predictions.list();
+    } catch (e) {
+      isLoading = false;
+      return "I didn't understand your question. Please try again.";
+    }
 
     Prediction prediction = await Replicate.instance.predictions.get(
       id: predictionsPageList.results.elementAt(0).id,
@@ -191,9 +236,9 @@ class _MyHomePageState extends State<MyHomePage> {
       onResult: (text) => setState(() {
             _textController.text = text;
           }),
-      onListening: (isListening) {
+      onListening: (isListening, status) {
         this.isListening = isListening;
-        if (this.isListening == false) _porcupineManager.start();
+        if (status == "done") _porcupineManager.start();
       });
 
   Widget customButton({

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class SpeechApi {
@@ -6,7 +5,7 @@ class SpeechApi {
 
   static Future<bool> toggleRecording({
     required Function(String text) onResult,
-    required ValueChanged<bool> onListening,
+    required Function(bool, String) onListening,
   }) async {
     if (_speech.isListening) {
       _speech.stop();
@@ -14,7 +13,7 @@ class SpeechApi {
     }
 
     final isAvailable = await _speech.initialize(
-      onStatus: (status) => onListening(_speech.isListening),
+      onStatus: (status) => onListening(_speech.isListening, status),
       // ignore: avoid_print
       onError: (e) => print('Error: $e'),
     );
