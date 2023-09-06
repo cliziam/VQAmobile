@@ -477,8 +477,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ],
                           ),
-                          const Padding(
-                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0)),
                           Expanded(
                               flex: 1,
                               child: Padding(
