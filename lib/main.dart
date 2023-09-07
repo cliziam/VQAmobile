@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isListening = false;
   bool isLoading = false;
   bool isFilledQuestion = false;
+  bool isShootingImageWithWakeword = false;
   bool _isEmpty = false;
   bool _isShort = false;
   bool _isSwitched = true;
@@ -93,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
       late CameraController _controller;
       late Future<void> _initializeControllerFuture;
 
+      setState(() {
+        isShootingImageWithWakeword = true;
+      });
       Vibrate.feedback(FeedbackType.success);
       // init camera
       final cameras = await availableCameras();
@@ -114,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
         final imagePermanent = await saveFilePermanently(image.path);
         globals.pathImage = imagePermanent;
         setState(() {
+          isShootingImageWithWakeword = false;
           globals.pathImage = imagePermanent; //imageTemporary
           globals.isFilledImage = true;
         });
@@ -215,8 +220,16 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       predictionsPageList = await Replicate.instance.predictions.list();
     } catch (e) {
-      isLoading = false;
-      return "I didn't understand your question. Please try again.";
+      print("Failed to list the predictions at first try: $e");
+
+      try {
+        await Future.delayed(const Duration(seconds: 5));
+        predictionsPageList = await Replicate.instance.predictions.list();
+      } catch (e) {
+        print("Failed to list the predictions at second try: $e");
+        isLoading = false;
+        return "I didn't understand your question. Please try again.";
+      }
     }
 
     Prediction prediction = await Replicate.instance.predictions.get(
@@ -350,11 +363,21 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 const SizedBox(height: 10),
-                globals.isFilledImage
-                    ? Image.file(globals.pathImage!,
-                        width: 250, height: 250, fit: BoxFit.contain)
-                    : Image.asset("assets/images/logo.png",
-                        width: 250, height: 250),
+                isShootingImageWithWakeword
+                    ? const Center(
+                        child: SizedBox(
+                            width: 250.0,
+                            height: 250.0,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Color.fromARGB(255, 235, 186, 141),
+                              ),
+                            )))
+                    : (globals.isFilledImage
+                        ? Image.file(globals.pathImage!,
+                            width: 250, height: 250, fit: BoxFit.contain)
+                        : Image.asset("assets/images/logo.png",
+                            width: 250, height: 250)),
                 const SizedBox(height: 10),
                 Row(children: <Widget>[
                   customButton(
@@ -492,7 +515,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                         width: 40,
                                         height: 10,
                                         child: Center(
-                                            child: CircularProgressIndicator()),
+                                            child: CircularProgressIndicator(
+                                                color: Color.fromARGB(
+                                                    255, 235, 186, 141))),
                                       ),
                               )),
                         ]),
