@@ -164,7 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
         [
           BuiltInKeyword.PICOVOICE,
           BuiltInKeyword.PORCUPINE,
-          BuiltInKeyword.BLUEBERRY
+          BuiltInKeyword.BLUEBERRY,
+          BuiltInKeyword.JARVIS,
         ],
         _wakeWordCallBack,
       );
@@ -176,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _wakeWordCallBack(int keywordIndex) async {
-    if (keywordIndex <= 1) _porcupineManager.stop();
+    if (keywordIndex <= 1 || keywordIndex == 3) await _porcupineManager.stop();
     if (keywordIndex == 0) {
       // ignore: avoid_print
       print('PICOVOICE word detected');
@@ -190,6 +191,11 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: avoid_print
       print("BLUEBERRY word detected");
       onButtonPress();
+    } else if (keywordIndex == 3) {
+      // ignore: avoid_print
+      print("JARVIS word detected");
+      textToSpeech(_textController.text);
+      _porcupineManager.start();
     }
   }
 
@@ -424,6 +430,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         IconButton(
                             icon: const Icon(Icons.mic),
                             onPressed: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
                               _porcupineManager.stop();
                               //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
                               toggleRecording();
