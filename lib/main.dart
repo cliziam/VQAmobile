@@ -76,8 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showInfoDialog(this.context, true);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      bool? alreadySet = await checkIfAlreadySet();
+      if (!alreadySet) // se la chiave non è stata ancora inserita, significa che è la prima volta che si apre l'app
+        showInfoDialog(this.context, true);
     });
     _createPorcupineManager();
   }
@@ -91,6 +94,16 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.setSpeechRate(0.5);
     await fluttertts.setPitch(1);
     await fluttertts.speak(text);
+  }
+
+  Future<bool> checkIfAlreadySet() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isSet = prefs.containsKey('first_time');
+    if (!isSet) {
+      prefs.setBool('first_time', true);
+      return false;
+    }
+    return true;
   }
 
   Future getImage(ImageSource source, bool calledByWakeWord) async {
@@ -338,7 +351,7 @@ class _MyHomePageState extends State<MyHomePage> {
         "\"JARVIS\" reads the question you inserted,\n"
         "\"BLUEBERRY\" submits the question to the AI,\n"
         "\"GRAPEFRUIT\" shows this dialog again.\n"
-        "If you want to crop an image, tap in the top right corner\n."
+        "If you want to crop an image, tap in the top right corner.\n"
         "Tap anywhere on the screen to close the message.";
 
     Widget okButton = TextButton(
