@@ -17,6 +17,7 @@ import 'package:porcupine_flutter/porcupine_error.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart';
 import 'globals.dart' as globals;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -75,6 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showInfoDialog(this.context, true);
+    });
     _createPorcupineManager();
   }
 
@@ -91,7 +95,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future getImage(ImageSource source, bool calledByWakeWord) async {
     if (calledByWakeWord) {
+      // ignore: no_leading_underscores_for_local_identifiers
       late CameraController _controller;
+      // ignore: no_leading_underscores_for_local_identifiers
       late Future<void> _initializeControllerFuture;
 
       setState(() {
@@ -106,6 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _initializeControllerFuture = _controller.initialize();
       }
       if (!mounted) {
+        // ignore: avoid_print
         print("NOT MOUNTED!!");
         return;
       }
@@ -123,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
           globals.isFilledImage = true;
         });
       } catch (e) {
+        // ignore: avoid_print
         print(e);
       }
 
@@ -166,6 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BuiltInKeyword.PORCUPINE,
           BuiltInKeyword.BLUEBERRY,
           BuiltInKeyword.JARVIS,
+          BuiltInKeyword.GRAPEFRUIT
         ],
         _wakeWordCallBack,
       );
@@ -196,6 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
       print("JARVIS word detected");
       textToSpeech(_textController.text);
       _porcupineManager.start();
+    } else if (keywordIndex == 4) {
+      // ignore: avoid_print
+      print("GRAPEFRUIT word detected");
+      // ignore: use_build_context_synchronously
+      showInfoDialog(this.context, true);
     }
   }
 
@@ -226,12 +240,14 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       predictionsPageList = await Replicate.instance.predictions.list();
     } catch (e) {
+      // ignore: avoid_print
       print("Failed to list the predictions at first try: $e");
 
       try {
         await Future.delayed(const Duration(seconds: 5));
         predictionsPageList = await Replicate.instance.predictions.list();
       } catch (e) {
+        // ignore: avoid_print
         print("Failed to list the predictions at second try: $e");
         isLoading = false;
         return "I didn't understand your question. Please try again.";
@@ -306,6 +322,53 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  showInfoDialog(BuildContext context, bool vocalReproduction) async {
+    if (vocalReproduction) {
+      await Future.delayed(const Duration(
+          seconds:
+              1)); // serve per fare inizializzare porcupineManager, altrimenti dà errore
+      _porcupineManager.stop();
+    }
+
+    String contentDialog =
+        "Hi, I am your Visual Question Answering assistant. In addition to the classic mode of interaction by tapping the buttons, you can also use me via vocal commands.\n"
+        "Here is a list of what you can say:\n"
+        "\"PORCUPINE\" automatically shoots a photo with your camera,\n"
+        "\"PICOVOICE\" turns on the mic to insert a question through speech,\n"
+        "\"JARVIS\" reads the question you inserted,\n"
+        "\"BLUEBERRY\" submits the question to the AI,\n"
+        "\"GRAPEFRUIT\" shows this dialog again.\n"
+        "If you want to crop an image, tap in the top right corner\n."
+        "Tap anywhere on the screen to close the message.";
+
+    Widget okButton = TextButton(
+        child: const Text("Ok"),
+        onPressed: () {
+          Navigator.of(context).pop(); // dismiss dialog
+        });
+    AlertDialog alert = AlertDialog(
+      actionsAlignment: MainAxisAlignment.center,
+      title: const Text("How to use the APP"),
+      content: Text(contentDialog),
+      actions: [
+        okButton,
+      ],
+    );
+    // ignore: use_build_context_synchronously
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    ).then((value) => {
+          if (vocalReproduction) {fluttertts.stop(), _porcupineManager.start()}
+        });
+    if (vocalReproduction) {
+      textToSpeech(contentDialog);
+      //_porcupineManager.start();
+    }
+  }
+
   void setBooleans(bool isShort) {
     if (isShort) {
       _isShort = true;
@@ -347,6 +410,15 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: const Color.fromARGB(255, 217, 229, 222),
           title: Text(widget.title),
           actions: <Widget>[
+            IconButton(
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                  color: Colors.black,
+                  size: 30,
+                ),
+                onPressed: () {
+                  showInfoDialog(context, false);
+                }),
             IconButton(
               icon: const Icon(
                 Icons.photo_size_select_large,
