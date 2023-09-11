@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -77,12 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      bool? alreadySet = await checkIfAlreadySet();
-      if (!alreadySet) // se la chiave non è stata ancora inserita, significa che è la prima volta che si apre l'app
-        showInfoDialog(this.context, true);
-    });
-    _createPorcupineManager();
+    _initialize();
   }
 
   /*for the text-to-speech*/
@@ -94,16 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
     await fluttertts.setSpeechRate(0.5);
     await fluttertts.setPitch(1);
     await fluttertts.speak(text);
-  }
-
-  Future<bool> checkIfAlreadySet() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isSet = prefs.containsKey('first_time');
-    if (!isSet) {
-      prefs.setBool('first_time', true);
-      return false;
-    }
-    return true;
   }
 
   Future getImage(ImageSource source, bool calledByWakeWord) async {
@@ -149,8 +135,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //dismiss camera and restart porcupine
       _controller.dispose();
+      AudioPlayer().play(AssetSource('audio/camera.mp3'));
       _porcupineManager.start();
-      Vibrate.feedback(FeedbackType.success);
     } else {
       try {
         Vibrate.feedback(FeedbackType.success);
@@ -178,7 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(imagePath).copy(image.path);
   }
 
-  _createPorcupineManager() async {
+  _initialize() async {
+    // create porcupine manager
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey,
@@ -191,10 +178,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         _wakeWordCallBack,
       );
-      _porcupineManager.start();
+      await _porcupineManager.start();
     } on PorcupineException catch (err) {
       // ignore: avoid_print
       print("Porcupine exception: $err.message");
+    }
+
+    // show info dialog only the first time
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? firstTime = prefs.getBool('first_time');
+    if (firstTime == null) {
+      prefs.setBool('first_time', true);
+      showInfoDialog(this.context, true);
     }
   }
 
@@ -336,23 +331,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   showInfoDialog(BuildContext context, bool vocalReproduction) async {
-    if (vocalReproduction) {
-      await Future.delayed(const Duration(
-          seconds:
-              1)); // serve per fare inizializzare porcupineManager, altrimenti dà errore
-      _porcupineManager.stop();
-    }
+    await _porcupineManager.stop();
 
     String contentDialog =
         "Hi, I am your Visual Question Answering assistant. In addition to the classic mode of interaction by tapping the buttons, you can also use me via vocal commands.\n"
         "Here is a list of what you can say:\n"
-        "\"PORCUPINE\" automatically shoots a photo with your camera,\n"
-        "\"PICOVOICE\" turns on the mic to insert a question through speech,\n"
-        "\"JARVIS\" reads the question you inserted,\n"
-        "\"BLUEBERRY\" submits the question to the AI,\n"
+        "\"PORCUPINE\" automatically shoots a photo with your camera;\n"
+        "\"PICOVOICE\" turns on the mic to insert a question through speech;\n"
+        "\"JARVIS\" reads the question you inserted;\n"
+        "\"BLUEBERRY\" submits the question to the AI;\n"
         "\"GRAPEFRUIT\" shows this dialog again.\n"
-        "If you want to crop an image, tap in the top right corner.\n"
-        "Tap anywhere on the screen to close the message.";
+        "If you want to crop an image, tap on the top right corner.\n"
+        "Tap on any border of the screen to close this message.";
 
     Widget okButton = TextButton(
         child: const Text("Ok"),
@@ -361,24 +351,29 @@ class _MyHomePageState extends State<MyHomePage> {
         });
     AlertDialog alert = AlertDialog(
       actionsAlignment: MainAxisAlignment.center,
-      title: const Text("How to use the APP"),
+      title: const Text("How to use the app"),
       content: Text(contentDialog),
       actions: [
         okButton,
       ],
     );
+
     // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return alert;
       },
-    ).then((value) => {
-          if (vocalReproduction) {fluttertts.stop(), _porcupineManager.start()}
-        });
+    ).then((value) {
+      if (vocalReproduction) {
+        fluttertts.stop();
+      }
+      _porcupineManager.start();
+      Vibrate.feedback(FeedbackType.success);
+    });
+
     if (vocalReproduction) {
       textToSpeech(contentDialog);
-      //_porcupineManager.start();
     }
   }
 
