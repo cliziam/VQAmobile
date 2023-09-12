@@ -334,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await _porcupineManager.stop();
 
     String contentDialog =
-        "Hi, I am your Visual Question Answering assistant. In addition to the classic mode of interaction by tapping the buttons, you can also use me via vocal commands.\n"
+        "Hi, I am your Visual Question Answering assistant. \nIn addition to the classic mode of interaction by tapping the buttons, you can also use me via vocal commands.\n"
         "Here is a list of what you can say:\n"
         "\"PORCUPINE\" automatically shoots a photo with your camera;\n"
         "\"PICOVOICE\" turns on the mic to insert a question through speech;\n"
@@ -414,7 +414,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          centerTitle: true,
+          centerTitle: false,
           backgroundColor: const Color.fromARGB(255, 217, 229, 222),
           title: Text(widget.title),
           actions: <Widget>[
@@ -437,7 +437,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CropImage()),
-                );
+                ).then((value) {
+                  setState(() {
+                    // refresh state of Page1
+                  });
+                });
               },
             )
           ],

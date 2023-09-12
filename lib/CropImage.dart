@@ -303,14 +303,7 @@ class _CropImagePageState extends State<CropImagePage> {
   }
 
   void _check() {
-    setState(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(
-                  title: '',
-                )),
-      );
-    });
+
+    Navigator.pop(context);
   }
 }
