@@ -7,16 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:multimodal_interaction_prj/main.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:remove_bg/remove_bg.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:image/image.dart' as img;
 import 'globals.dart' as globals;
+
 
 class CropImage extends StatelessWidget {
   const CropImage({Key? key}) : super(key: key);
+  
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return const CropImagePage(title: 'Image Cropper Demo');
+
   }
 }
 
@@ -34,8 +42,13 @@ class CropImagePage extends StatefulWidget {
 }
 
 class _CropImagePageState extends State<CropImagePage> {
-  File? _pickedFile;
-  CroppedFile? _croppedFile;
+  double linearProgress = 0.0;
+  Uint8List? bytes;
+  var isLoading = false;
+  var isCropped = false;
+  String API_REMOVEBG = dotenv.env['REMOVEBG']!;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,61 +82,57 @@ class _CropImagePageState extends State<CropImagePage> {
   }
 
   Widget _body() {
-    if (_croppedFile != null || _pickedFile != null) {
+  if (globals.pathImage != null) {
       return _imageCard();
-    } else {
+    } 
+    else  {
       return _uploaderCard();
     }
   }
 
-  Widget _imageCard() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: kIsWeb ? 24.0 : 16.0),
-            child: Card(
-              elevation: 4.0,
-              child: Padding(
-                padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
-                child: _image(),
-              ),
+ Widget _imageCard() {
+  return Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: kIsWeb ? 24.0 : 16.0),
+          child: Card(
+            elevation: 4.0,
+            child: Padding(
+              padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
+              child: _image(),
             ),
           ),
-          _menu(),
-        ],
+        ),
+        _menu(),
+      ],
+    ),
+  );
+}
+
+Widget _image() {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+  if (globals.pathImage != null ) {
+    final path = globals.pathImage!.path;
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: 0.8 * screenWidth,
+        maxHeight: 0.7 * screenHeight,
       ),
+      child: kIsWeb ? Image.network(path) : Image.file(File(path)),
     );
   }
-
-  Widget _image() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    if (_croppedFile != null) {
-      final path = _croppedFile!.path;
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 0.8 * screenWidth,
-          maxHeight: 0.7 * screenHeight,
-        ),
-        child: kIsWeb ? Image.network(path) : Image.file(File(path)),
-      );
-    } else if (_pickedFile != null) {
-      final path = _pickedFile!.path;
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 0.8 * screenWidth,
-          maxHeight: 0.7 * screenHeight,
-        ),
-        child: kIsWeb ? Image.network(path) : Image.file(File(path)),
-      );
-    } else {
-      return const SizedBox.shrink();
-    }
+  else {
+    return const SizedBox.shrink();
   }
+}
+
+
+
 
   Widget _menu() {
     return Row(
@@ -131,6 +140,7 @@ class _CropImagePageState extends State<CropImagePage> {
       children: [
         FloatingActionButton(
           mini: true,
+          heroTag: 'check',
           onPressed: () {
             _check();
           },
@@ -139,8 +149,8 @@ class _CropImagePageState extends State<CropImagePage> {
           child: const Icon(Icons.check),
         ),
         FloatingActionButton(
-          heroTag: null,
           mini: true,
+          heroTag: 'clear',
           onPressed: () {
             _clear();
           },
@@ -148,11 +158,13 @@ class _CropImagePageState extends State<CropImagePage> {
           tooltip: 'Delete',
           child: const Icon(Icons.delete),
         ),
-        if (_croppedFile == null)
+         
+        if (isCropped == false)
           Padding(
             padding: const EdgeInsets.only(left: 32.0),
             child: FloatingActionButton(
               mini: true,
+              heroTag: 'crop',
               onPressed: () {
                 _cropImage();
               },
@@ -160,10 +172,58 @@ class _CropImagePageState extends State<CropImagePage> {
               tooltip: 'Crop',
               child: const Icon(Icons.crop),
             ),
+          ),
+          if (globals.isSegmented == false)
+          Padding(
+            padding: const EdgeInsets.only(left: 32.0),
+            child: FloatingActionButton(
+          mini: true,
+          heroTag: 'remove',
+          onPressed: globals.pathImage==null?null :() {
+                 Remove().bg(
+                      globals.pathImage!,
+                      privateKey: API_REMOVEBG, // Your API key
+                      onUploadProgressCallback: (progressValue) {
+                        if (kDebugMode) {
+                          print(progressValue);
+                        }
+                        setState(() {
+                          isLoading = true;
+                          linearProgress = progressValue;
+
+                        });
+                      },
+                    ).then((data) {
+                                    if (kDebugMode) {
+                                      print(data);
+                                    }
+                                    setState(() {
+                                      bytes = data;
+                                    });                
+                                    getTemporaryDirectory().then((tempDir) {
+                                      var image = img.decodeImage(bytes!);      
+                                      var tempPath = '${tempDir.path}/saved_image.png';
+                                      File file = File(tempPath);
+                                      file.writeAsBytes(img.encodePng(image!)).then((_) {
+                                        setState(() {
+                                          isLoading = false;
+                                          globals.pathImage = file; 
+                                          globals.isSegmented = true;
+                                        });
+                                      });
+                                    });
+                                  });
+                        
+                    },
+          backgroundColor: const Color.fromARGB(255, 235, 186, 141),
+          tooltip: 'Remove Background',
+          child: isLoading? const CircularProgressIndicator():  const Icon(Icons.auto_fix_high),
+        )
           )
       ],
     );
   }
+
 
   Widget _uploaderCard() {
     return Center(
@@ -237,9 +297,9 @@ class _CropImagePageState extends State<CropImagePage> {
   }
 
   Future<void> _cropImage() async {
-    if (_pickedFile != null) {
+    if (globals.pathImage != null) {
       final croppedFile = await ImageCropper().cropImage(
-        sourcePath: _pickedFile!.path,
+        sourcePath: globals.pathImage!.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 100,
         uiSettings: [
@@ -269,48 +329,50 @@ class _CropImagePageState extends State<CropImagePage> {
       );
       if (croppedFile != null) {
         setState(() {
-          _croppedFile = croppedFile;
-          globals.pathImage = File(_croppedFile!.path);
+          globals.pathImage = File(croppedFile.path);
           globals.isFilledImage = true;
+          isCropped = true;
         });
       }
     }
   }
 
-  Future _uploadImage() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image == null) return;
-      final imageTemporary =
-          File(image.path); // if we do not want to save the image on the device
+  void _uploadImage() {
+  ImagePicker().pickImage(source: ImageSource.gallery).then((image) {
+    final imageTemporary = File(image!.path);
+    setState(() {
+      bytes=null;
+      isCropped = false;
       globals.pathImage = imageTemporary;
       globals.isFilledImage = true;
+      globals.isSegmented = false;
+    });
+  
+  }).catchError((e) {
+    // Handle any errors that occur during image picking.
+    print("Failed to pick image: $e");
+  });
+}
 
-      setState(() {
-        _pickedFile = imageTemporary;
-      });
-    } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print("Failed to pick image: $e");
-    }
-  }
+
 
   void _clear() {
+    bytes=null;
+    isCropped = false;
+    globals.isSegmented=false;
+    globals.pathImage = null;
+    bytes=null;
     setState(() {
-      _pickedFile = null;
-      _croppedFile = null;
+      globals.pathImage = null;
+      globals.isSegmented=false;
+      bytes=null;
+      isCropped = false;
     });
+
   }
+  
 
   void _check() {
-    setState(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(
-                  title: '',
-                )),
-      );
-    });
+    Navigator.pop(context);
   }
 }

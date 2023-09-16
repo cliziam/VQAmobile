@@ -1,5 +1,4 @@
 import 'package:speech_to_text/speech_to_text.dart';
-
 class SpeechApi {
   static final _speech = SpeechToText();
 
@@ -26,3 +25,4 @@ class SpeechApi {
     return isAvailable;
   }
 }
+
