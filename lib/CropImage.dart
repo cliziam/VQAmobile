@@ -118,7 +118,6 @@ Widget _image() {
   final screenHeight = MediaQuery.of(context).size.height;
   if (globals.pathImage != null ) {
     final path = globals.pathImage!.path;
-  
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: 0.8 * screenWidth,
@@ -180,7 +179,7 @@ Widget _image() {
             child: FloatingActionButton(
           mini: true,
           heroTag: 'remove',
-          onPressed: () {
+          onPressed: globals.pathImage==null?null :() {
                  Remove().bg(
                       globals.pathImage!,
                       privateKey: API_REMOVEBG, // Your API key
@@ -191,28 +190,30 @@ Widget _image() {
                         setState(() {
                           isLoading = true;
                           linearProgress = progressValue;
+
                         });
                       },
-                    ).then((data) async {
-                                          if (kDebugMode) {
-                                            print(data);
-                                          }
-                                          
-                                          var image = img.decodeImage(data!);                                          
-                                          var tempDir = await getTemporaryDirectory();
-                                          var tempPath = '${tempDir.path}/saved_image.png';
-                                          
-                                          File file = File(tempPath);
-                                          await file.writeAsBytes(img.encodePng(image!));
-                                          
-                                          setState(() {
-                                            isLoading = false;
-                                            bytes = data;
-                                            globals.pathImage = file; 
-                                            globals.isSegmented = true;
-                                          });
+                    ).then((data) {
+                                    if (kDebugMode) {
+                                      print(data);
+                                    }
+                                    setState(() {
+                                      bytes = data;
+                                    });                
+                                    getTemporaryDirectory().then((tempDir) {
+                                      var image = img.decodeImage(bytes!);      
+                                      var tempPath = '${tempDir.path}/saved_image.png';
+                                      File file = File(tempPath);
+                                      file.writeAsBytes(img.encodePng(image!)).then((_) {
+                                        setState(() {
+                                          isLoading = false;
+                                          globals.pathImage = file; 
+                                          globals.isSegmented = true;
                                         });
-                                                                    
+                                      });
+                                    });
+                                  });
+                        
                     },
           backgroundColor: const Color.fromARGB(255, 235, 186, 141),
           tooltip: 'Remove Background',
@@ -336,35 +337,31 @@ Widget _image() {
     }
   }
 
-  Future _uploadImage() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image == null) return;
-      final imageTemporary =
-          File(image.path);
+  void _uploadImage() {
+  ImagePicker().pickImage(source: ImageSource.gallery).then((image) {
+    final imageTemporary = File(image!.path);
+    setState(() {
+      bytes=null;
+      isCropped = false;
+      globals.pathImage = imageTemporary;
       globals.isFilledImage = true;
+      globals.isSegmented = false;
+    });
+  
+  }).catchError((e) {
+    // Handle any errors that occur during image picking.
+    print("Failed to pick image: $e");
+  });
+}
 
-      setState(() {
-        globals.pathImage= imageTemporary;
-        globals.isFilledImage = true;
-      });
-      if(globals.pathImage != null){
-        print("carico l'immagine");
-        print(globals.pathImage);
-
-      }
-
-
-
-    } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print("Failed to pick image: $e");
-    }
-  }
 
 
   void _clear() {
-
+    bytes=null;
+    isCropped = false;
+    globals.isSegmented=false;
+    globals.pathImage = null;
+    bytes=null;
     setState(() {
       globals.pathImage = null;
       globals.isSegmented=false;
