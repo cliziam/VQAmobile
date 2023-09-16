@@ -433,14 +433,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.black,
                 size: 30,
               ),
-              onPressed: () {
-               
+              onPressed: () async {
+                await _porcupineManager.stop();
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CropImage()),
                 ).then((value) {
                   setState(() {
-                     //
+                    _porcupineManager.start();
                   });
                 });
               },
