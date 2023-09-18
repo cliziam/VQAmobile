@@ -1,6 +1,6 @@
-# multimodal_interaction_prj
+# VQAsk
 
-A new Flutter project.
+This project has been developed during the A.Y. 2022-23 for the Multimodal Interaction course at Sapienza University of Rome.
 
 ## Getting Started
 
@@ -14,3 +14,9 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Authors
+@cliziam
+@chiara giacanelli
+@davidesantoro
+@alessiopalma
