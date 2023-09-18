@@ -9,10 +9,9 @@ Particularly, this application provides the following modalities:
 This project has been developed during the A.Y. 2022-23 for the Multimodal Interaction course at Sapienza University of Rome.
 
 ## Some screen examples of the app
-<img src="https://imgur.com/MHqG48J.png" width="300"> <img src="https://imgur.com/zFRPyEd.png" width="300"> <img src="https://imgur.com/Q4nZ9lf.png" width="300">
+<img src="https://imgur.com/MHqG48J.png" width="300"> <img src="https://imgur.com/KXOK4C6.png" width="300"> <img src="https://imgur.com/zFRPyEd.png" width="300"> <img src="https://imgur.com/Q4nZ9lf.png" width="300">
 
 ## Getting Started
-
 To launch the application, type the command ```flutter run``` on the terminal after connecting a physical or emulated android device.
 
 A few resources to get you started if this is your first Flutter project:
