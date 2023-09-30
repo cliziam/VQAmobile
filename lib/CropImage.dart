@@ -5,6 +5,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,6 +17,7 @@ import 'package:remove_bg/remove_bg.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image/image.dart' as img;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'globals.dart' as globals;
 
 class CropImage extends StatelessWidget {
@@ -64,7 +66,7 @@ class _CropImagePageState extends State<CropImagePage> {
     try {
       _porcupineManager = await PorcupineManager.fromBuiltInKeywords(
         accessKey_porc,
-        [BuiltInKeyword.JARVIS],
+        [BuiltInKeyword.TERMINATOR],
         _wakeWordCallBack,
       );
       await _porcupineManager.start();
@@ -72,12 +74,18 @@ class _CropImagePageState extends State<CropImagePage> {
       // ignore: avoid_print
       print("Porcupine exception: $err.message");
     }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? firstTime = prefs.getBool('first_time');
+    if (firstTime == null) {
+      prefs.setBool('first_time', true);
+      showInfoDialog(this.context, true);
+    }
   }
 
   _wakeWordCallBack(int keywordIndex) async {
     if (keywordIndex == 0) {
       // ignore: avoid_print
-      print('JARVIS1 word detected');
+      print('TERMINATOR word detected');
       //AudioPlayer().play(AssetSource('audio/letsgo.mp3'));
       removeBackground();
     }
@@ -86,7 +94,9 @@ class _CropImagePageState extends State<CropImagePage> {
   Future<bool> _onWillPop() async {
     await _porcupineManager.stop();
     await _porcupineManager.delete();
-
+    globals.pathImage = null;
+    globals.isFilledImage = false;  
+    // ignore: use_build_context_synchronously
     Navigator.of(context).pop(true);
     return true;
   }
@@ -128,6 +138,59 @@ class _CropImagePageState extends State<CropImagePage> {
       Vibrate.feedback(FeedbackType.success);
     }
   }
+  
+  /*for the text-to-speech*/
+  FlutterTts fluttertts = FlutterTts();
+
+  void textToSpeech(String text) async {
+    await fluttertts.setLanguage("en-US");
+    await fluttertts.setVolume(1);
+    await fluttertts.setSpeechRate(0.5);
+    await fluttertts.setPitch(1);
+    await fluttertts.speak(text);
+  }
+
+  
+  showInfoDialog(BuildContext context, bool vocalReproduction) async {
+    await _porcupineManager.stop();
+
+    String contentDialog =
+        "Hi, I am your Visual Question Answering assistant.\n"
+        "If you wish to segment an image, simply say 'TERMINATOR,' and I will extract the object from the image.\n"
+        "Tap on any border of the screen to close this message.";
+
+    Widget okButton = TextButton(
+        child: const Text("Ok"),
+        onPressed: () {
+          Navigator.of(context).pop(); // dismiss dialog
+        });
+    AlertDialog alert = AlertDialog(
+      actionsAlignment: MainAxisAlignment.center,
+      title: const Text("How to use the app"),
+      content: Text(contentDialog),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // ignore: use_build_context_synchronously
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    ).then((value) {
+      if (vocalReproduction) {
+        fluttertts.stop();
+      }
+      _porcupineManager.start();
+      Vibrate.feedback(FeedbackType.success);
+    });
+
+    if (vocalReproduction) {
+      textToSpeech(contentDialog);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +198,13 @@ class _CropImagePageState extends State<CropImagePage> {
         onWillPop: _onWillPop,
         child: Scaffold(
           appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.info_outline_rounded, color: Colors.black, size: 30,),
+                onPressed: () {
+                      showInfoDialog(this.context, true);
+                },
+              ),],
             title: const Text(
               'Editable photograph',
               style: TextStyle(color: Colors.black),
@@ -398,10 +468,6 @@ class _CropImagePageState extends State<CropImagePage> {
   }
 
   void _clear() {
-    // bytes = null;
-    // isCropped = false;
-    // globals.isSegmented = false;
-    // globals.pathImage = null;
     setState(() {
       bytes = null;
       isCropped = false;
