@@ -95,7 +95,7 @@ class _CropImagePageState extends State<CropImagePage> {
     await _porcupineManager.stop();
     await _porcupineManager.delete();
     globals.pathImage = null;
-    globals.isFilledImage = false;  
+    globals.isFilledImage = false;
     // ignore: use_build_context_synchronously
     Navigator.of(context).pop(true);
     return true;
@@ -138,7 +138,7 @@ class _CropImagePageState extends State<CropImagePage> {
       Vibrate.feedback(FeedbackType.success);
     }
   }
-  
+
   /*for the text-to-speech*/
   FlutterTts fluttertts = FlutterTts();
 
@@ -150,7 +150,6 @@ class _CropImagePageState extends State<CropImagePage> {
     await fluttertts.speak(text);
   }
 
-  
   showInfoDialog(BuildContext context, bool vocalReproduction) async {
     await _porcupineManager.stop();
 
@@ -200,11 +199,16 @@ class _CropImagePageState extends State<CropImagePage> {
           appBar: AppBar(
             actions: [
               IconButton(
-                icon: const Icon(Icons.info_outline_rounded, color: Colors.black, size: 30,),
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                  color: Colors.black,
+                  size: 30,
+                ),
                 onPressed: () {
-                      showInfoDialog(this.context, true);
+                  showInfoDialog(this.context, false);
                 },
-              ),],
+              ),
+            ],
             title: const Text(
               'Editable photograph',
               style: TextStyle(color: Colors.black),
