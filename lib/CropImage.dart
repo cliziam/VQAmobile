@@ -91,7 +91,6 @@ class _CropImagePageState extends State<CropImagePage> {
     return true;
   }
 
-  // create void function called removeBackground
   void removeBackground() async {
     if (globals.pathImage != null && globals.isSegmented == false) {
       var data = await Remove().bg(
