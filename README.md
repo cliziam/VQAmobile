@@ -1,5 +1,5 @@
 # VQAsk
-Implementation of **VQAsk: a multimodal Android GPT-based application to help blind users visualize pictures** (https://doi.org/10.1145/3656650.3656677).
+Official implementation of **VQAsk: a multimodal Android GPT-based application to help blind users visualize pictures** (https://doi.org/10.1145/3656650.3656677).
 In this project we developed a Flutter application focused on the Visual Question Answering task, a computer vision task where a system is given a text-based question about an image, and it must infer the answer.
 We have implemented different interaction modes to guarantee an enjoyable user experience and to give users the possibility to choose how to exploit the application's functionalities according to their needs or preferences.
 Particularly, this application provides the following modalities:
